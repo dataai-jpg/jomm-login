@@ -323,13 +323,19 @@ const sorted=a=>a.slice().sort((x,y)=>String(y.requested_at).localeCompare(Strin
 
 /* ============ server calls with loading state ============ */
 function busy(){document.body.classList.toggle('loading',ui.pending>0)}
-async function call(fn,arg){
-  const c=window.JOMM_CONFIG;
+const READS=['login','bootstrap','securityLog'];
+async function call(fn,arg,tries){
+  const c=window.JOMM_CONFIG;tries=tries||0;
   if(!ui.tok)throw new Error('ACCESS:Please sign in with your Google account.');
-  let r;
-  try{r=await fetch(c.BACKEND_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({token:ui.tok,fn,arg:arg===undefined?null:arg})})}
-  catch(e){throw new Error('Cannot reach the JOMM service. Check your connection and try again.')}
-  let o;try{o=await r.json()}catch(e){throw new Error('The service is temporarily unavailable. Please try again.')}
+  let o;
+  try{
+    const r=await fetch(c.BACKEND_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({token:ui.tok,fn,arg:arg===undefined?null:arg})});
+    o=await r.json();
+  }catch(e){
+    /* Google's servers sometimes fail briefly. Reads are safe to repeat; saves are not, so those ask the person to retry. */
+    if(READS.indexOf(fn)>=0&&tries<2){await new Promise(k=>setTimeout(k,1200*(tries+1)));return call(fn,arg,tries+1)}
+    throw new Error(READS.indexOf(fn)>=0?'The service is busy right now. Please try again in a moment.':'The service did not respond, so your change may not have been saved. Refresh to check, then try again.');
+  }
   if(!o.ok)throw new Error(o.error||'Something went wrong. Please try again.');
   return o.data;
 }
