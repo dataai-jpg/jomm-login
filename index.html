@@ -973,7 +973,7 @@ function pwaShow(){
   else{   /* iPhone and iPad: Apple does not let a website add itself, so we walk the person through the two taps */
     const share='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M5 11v8a2 2 0 002 2h10a2 2 0 002-2v-8"/></svg>',plus='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:-2px"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M12 8v8M8 12h8"/></svg>';
     const safari=/safari/i.test(navigator.userAgent)&&!/crios|fxios|edgios|fbav|fban|instagram|line\//i.test(navigator.userAgent);
-    d.innerHTML=safari?(navigator.share?`<span>Tap <b>Open Share menu</b>, then tap ${plus} <b>Add to Home Screen</b>.</span>`:`<span>Tap ${share} <b>Share</b>, then tap ${plus} <b>Add to Home Screen</b>.</span>`)
+    d.innerHTML=safari?`<span>1. Tap ${share} <b>Share</b> at the bottom of the screen.</span><span>2. Scroll down and tap ${plus} <b>Add to Home Screen</b>.</span><span>3. Tap <b>Add</b>.</span>`
       :`<span>Open this page in <b>Safari</b> first (tap the ⋯ or Share menu, then Open in Safari). Then tap ${share} <b>Share</b> and <b>Add to Home Screen</b>.</span>`;
   }
   $('#pwapi').textContent=installEv?'Install':(navigator.share?'Open Share menu':'Got it');e.classList.toggle('ios',!installEv);e.hidden=false;
