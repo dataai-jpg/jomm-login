@@ -12,6 +12,9 @@
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>window.JOMM_CONFIG={BACKEND_URL:"https://script.google.com/macros/s/AKfycbzmKiDc-tTnZ8FiFzwLQCFFRL4BN6R4lHhIfV3EJMh997m7Gt74RA5TOqHcXwdCW0ql/exec",GOOGLE_CLIENT_ID:"330969148818-7471oj4tq9fui1hdhoed617hkat69cvs.apps.googleusercontent.com"}</script>
 <style>
+.pwap{position:fixed;left:50%;transform:translateX(-50%);bottom:max(16px,env(safe-area-inset-bottom));width:min(440px,calc(100% - 24px));z-index:60;display:flex;align-items:center;gap:12px;background:var(--surface);color:var(--ink);border:1px solid var(--line2);border-radius:16px;padding:12px 14px;box-shadow:0 12px 40px rgba(8,16,27,.28)}
+.pwap[hidden]{display:none}.pwap img{border-radius:10px;flex:none}.pwat{flex:1;min-width:0;display:flex;flex-direction:column;font-size:13px;color:var(--mut)}.pwat b{color:var(--ink);font-size:14px}.pwab{display:flex;gap:6px;flex:none}
+@media(max-width:560px){.pwap{flex-wrap:wrap}.pwab{width:100%;justify-content:flex-end}body.in .pwap{bottom:calc(76px + env(safe-area-inset-bottom))}}
 :root{
   --bg:#f2f5f8;--surface:#fff;--surface2:#f7f9fb;--ink:#0f1c2e;--mut:#5a6a7e;--line:#e1e7ee;--line2:#cfd8e3;
   --brand:#0d7a78;--brand-d:#0a615f;--on-brand:#fff;--brand-soft:#e0f2f1;
@@ -286,7 +289,6 @@ dialog textarea{max-height:40vh}
     <div class="lerr" id="lerr" role="alert"></div>
     <div id="gbtn" style="margin-top:20px;min-height:44px"></div>
     
-    <p class="lnote" id="pwa" hidden><button class="btn ghost" id="pwab" type="button">Install JOMM on this device</button></p>
     <p class="lnote" id="lswitch" hidden>Wrong account? Pick another one in the Google button above, or choose <b>Use another account</b> in its window.</p>
     <p class="lnote" style="color:var(--mut)">Only registered, active accounts can sign in. Ask your manager if you need access.</p>
   </div></div>
@@ -315,6 +317,7 @@ dialog textarea{max-height:40vh}
 <aside id="drawer" aria-label="Job order details"></aside>
 <dialog id="dlg"></dialog>
 <div class="vm" id="vm" hidden role="alertdialog" aria-modal="true" aria-labelledby="vmt" aria-describedby="vmd"><div class="box"><div class="big" aria-hidden="true"></div><h3 id="vmt"></h3><p id="vmd"></p><div class="vacts" id="vma"></div></div></div>
+<div class="pwap" id="pwap" role="dialog" aria-label="Install JOMM" hidden><img src="icons/icon-192.png" alt="" width="44" height="44"><div class="pwat"><b>Install JOMM</b><span id="pwapd"></span></div><div class="pwab"><button class="btn ghost sm" id="pwapn" type="button">Not now</button><button class="btn sm" id="pwapi" type="button">Install</button></div></div>
 <div id="toasts" aria-live="polite"></div>
 
 <script>
@@ -956,13 +959,27 @@ function initGoogle(){
 function armIdle(){clearTimeout(idleT);idleT=setTimeout(()=>{if(S)showLogin('You were signed out after 30 minutes of inactivity.')},30*60*1000)}
 ['click','keydown','touchstart'].forEach(ev=>document.addEventListener(ev,()=>{if(S)armIdle()},{passive:true}));
 showLogin('');initGoogle();
-/* ---- installable app (PWA) ---- */
+/* ---- installable app (PWA): offers installation with a pop-up; the browser then shows its own confirmation ---- */
 let installEv=null;
 const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent),isStandalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone;
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEv=e;const b=$('#pwa');if(b&&!isStandalone())b.hidden=false});
-window.addEventListener('appinstalled',()=>{installEv=null;const b=$('#pwa');if(b)b.hidden=true;toast('JOMM was installed on this device')});
-$('#pwab').onclick=async()=>{if(!installEv)return;installEv.prompt();try{await installEv.userChoice}catch(e){}installEv=null;$('#pwa').hidden=true};
-if(isIOS&&!isStandalone()){$('#pwa').hidden=false;$('#pwab').textContent='Add JOMM to your Home Screen';$('#pwab').onclick=()=>toast('In Safari, tap Share, then Add to Home Screen.')}
+const pwaSnoozed=()=>{try{return Date.now()<+localStorage.getItem('jomm_pwa_snooze')}catch(e){return false}};
+const pwaSnooze=d=>{try{localStorage.setItem('jomm_pwa_snooze',String(Date.now()+d*864e5))}catch(e){}};
+function pwaHide(){const e=$('#pwap');if(e)e.hidden=true}
+function pwaShow(){
+  if(isStandalone()||pwaSnoozed())return;
+  if(!installEv&&!isIOS)return;
+  const e=$('#pwap');$('#pwapd').textContent=installEv?'Open JOMM like an app from your home screen, in its own window.':'In Safari, tap the Share button, then choose Add to Home Screen.';
+  $('#pwapi').textContent=installEv?'Install':'Got it';e.hidden=false;
+}
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEv=e;setTimeout(pwaShow,1500)});
+window.addEventListener('appinstalled',()=>{installEv=null;pwaHide();toast('JOMM was installed on this device')});
+$('#pwapi').onclick=async()=>{
+  if(!installEv){pwaHide();pwaSnooze(30);return}
+  pwaHide();installEv.prompt();let r={};try{r=await installEv.userChoice}catch(x){}
+  installEv=null;if(r.outcome!=='accepted')pwaSnooze(7);
+};
+$('#pwapn').onclick=()=>{pwaHide();pwaSnooze(7)};
+if(isIOS)setTimeout(pwaShow,2500);
 /* Say so when the connection drops instead of failing silently. */
 addEventListener('offline',()=>toast('You are offline. JOMM needs a connection to load and save data.','err'));
 addEventListener('online',()=>toast('Back online'));
