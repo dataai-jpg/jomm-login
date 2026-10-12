@@ -273,6 +273,42 @@ dialog::backdrop{background:rgba(8,16,27,.55)}
 .fr .fn{flex:1;min-width:0}.fr .fn b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fr .fn small{color:var(--mut)}
 .tl .fchips{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}.tl .fchips .btn{max-width:100%}.tl .rtext{white-space:pre-wrap;word-break:break-word}
 dialog textarea{max-height:40vh}
+/* ---- Timeline (Gantt) ---- */
+.gtiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
+.gtl{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;box-shadow:var(--shadow)}
+.gtl b{display:block;font-size:24px;line-height:1.1;font-weight:700}.gtl span{display:block;font-size:12.5px;color:var(--mut);margin-top:2px}.gtl small{display:block;font-size:12px;color:var(--mut);margin-top:6px}
+.gtl.bad b{color:var(--bad)}.gtl.ok b{color:var(--done)}
+.gtb{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}.gtb .sp{flex:1}
+.seg{display:inline-flex;border:1px solid var(--line2);border-radius:10px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:transparent;color:var(--mut);font:inherit;font-size:13px;font-weight:600;padding:7px 12px;cursor:pointer}.seg button.on{background:var(--brand);color:var(--on-brand)}
+.gleg{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--mut);margin-bottom:10px}.gleg i{display:inline-block;vertical-align:-1px;margin-right:6px}
+.gleg .lb{width:22px;height:8px;border-radius:3px}.gleg .ld{width:9px;height:9px;transform:rotate(45deg);border:2px solid var(--ink);background:var(--surface)}.gleg .ll{width:2px;height:12px;background:var(--brand)}
+.gt{--lw:290px;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow-x:auto;margin-bottom:16px}
+.gin{position:relative;min-width:100%;width:max-content}
+.gin>.gr{width:100%}
+.gr{display:flex;border-bottom:1px solid var(--line)}.gr:last-child{border-bottom:0}
+.gl{position:sticky;left:0;z-index:3;flex:none;width:var(--lw);background:var(--surface);padding:9px 12px;display:flex;gap:8px;align-items:flex-start;border-right:1px solid var(--line)}
+.gl .gx{flex:none;width:22px;height:22px;border:0;border-radius:6px;background:var(--surface2);color:var(--mut);cursor:pointer;font-size:11px;line-height:1;margin-top:1px}.gl .gx:hover{background:var(--brand-soft)}
+.gl .gx.sp0{visibility:hidden}.gl .gt2{min-width:0;display:flex;flex-direction:column;gap:3px}
+.gl b{font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}.gl small{font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gl .chip{align-self:flex-start;font-size:11.5px;padding:1px 9px 1px 7px}
+.gr.tk2 .gl{padding-left:34px;background:var(--surface2)}.gr.tk2 .gl b{font-weight:500;cursor:default}.gr.tk2 .gtk{background-color:color-mix(in srgb,var(--surface2) 60%,transparent)}
+.gr.cx .gl b{text-decoration:line-through;color:var(--mut)}
+.gtk{position:relative;flex:none;min-height:54px;background-image:linear-gradient(to right,var(--line) 1px,transparent 1px)}
+.gr.tk2 .gtk{min-height:42px}
+.gb{position:absolute;top:50%;height:14px;margin-top:-7px;border-radius:5px;overflow:hidden}
+.gb.base{background:color-mix(in srgb,var(--prog) 22%,transparent)}.gb.base i{display:block;height:100%;background:var(--prog)}
+.gb.done{background:var(--done)}.gb.late{background:var(--bad)}.gb.lateopen{background:repeating-linear-gradient(135deg,var(--bad) 0 5px,color-mix(in srgb,var(--bad) 60%,#fff) 5px 10px)}
+.gb.none{background:color-mix(in srgb,var(--pen) 35%,transparent)}
+.gb.part{border-radius:5px 0 0 5px}.gb.partl{border-radius:0 5px 5px 0}
+.gm{position:absolute;top:50%;width:11px;height:11px;margin:-5.5px 0 0 -5.5px;transform:rotate(45deg);background:var(--surface);border:2px solid var(--ink);z-index:1}
+.gtd{position:absolute;top:0;bottom:0;width:2px;margin-left:-1px;background:var(--brand);z-index:2;pointer-events:none}
+.gtd::after{content:'Today';position:absolute;top:0;left:50%;transform:translateX(-50%);background:var(--brand);color:var(--on-brand);font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:0 0 6px 6px}
+.gh{position:sticky;top:0;z-index:4}.gh .gl{background:var(--surface2);align-items:center;font-size:12px;font-weight:600;color:var(--mut);min-height:46px}
+.gh .gtk{min-height:46px;background:var(--surface2)}
+.gh .mo{position:absolute;top:4px;font-size:11.5px;font-weight:700;color:var(--ink);padding-left:6px;white-space:nowrap}.gh .dy{position:absolute;top:26px;font-size:11px;color:var(--mut);padding-left:4px;white-space:nowrap}
+.gh .tick{position:absolute;top:0;bottom:0;width:1px;background:var(--line2)}
+@media(max-width:700px){.gt{--lw:172px}.gl{padding:8px 8px;gap:6px}.gl .gx{width:20px;height:20px}.gl b{font-size:13px}.seg button{padding:7px 10px}}
 </style></head>
 <body>
 <div id="topbar" aria-hidden="true"></div>
@@ -336,6 +372,7 @@ const P={
  shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',out:'<path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>',
  check:'<path d="M20 6L9 17l-5-5"/>',x:'<path d="M18 6L6 18M6 6l12 12"/>',list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
  board:'<rect x="3" y="3" width="6" height="18" rx="1"/><rect x="15" y="3" width="6" height="11" rx="1"/>',
+ gantt:'<rect x="3" y="4" width="9" height="4" rx="1"/><rect x="8" y="10" width="13" height="4" rx="1"/><rect x="5" y="16" width="10" height="4" rx="1"/>',
  clock:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',alert:'<circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>',
  refresh:'<path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.5 9a9 9 0 0114.9-3.4L23 10M1 14l4.6 4.4A9 9 0 0020.5 15"/>'
 };
@@ -835,11 +872,100 @@ function drawer(){
   document.body.classList.add('dopen');el.scrollTop=scrollTop;
 }
 
+/* ============ timeline (Gantt): target dates against actual completion ============ */
+const gt={f:'active',px:14,open:{},L:null};
+const plural=(n,w)=>n+' '+w+(n===1?'':'s');
+const dnum=v=>{if(!v)return null;const s=String(v),m=/^(\d{4})-(\d\d)-(\d\d)$/.exec(s);if(m)return Math.round(Date.UTC(+m[1],+m[2]-1,+m[3])/864e5);const d=new Date(s);return isNaN(d)?null:Math.floor((d.getTime()-d.getTimezoneOffset()*6e4)/864e5)};
+const dlabel=n=>new Date(n*864e5).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'});
+/* Compares a target day with the actual (or, when still open, today). */
+function sched(target,done,end,today){
+  if(target==null)return {k:'none',c:'pen',t:'No target date'};
+  if(done){const d=end-target;return d<=0?{k:'ok',c:'done',t:d===0?'On time':plural(-d,'day')+' early',d}:{k:'late',c:'bad',t:plural(d,'day')+' late',d}}
+  const d=today-target;
+  if(d>0)return {k:'over',c:'bad',t:'Overdue by '+plural(d,'day'),d};
+  if(d===0)return {k:'soon',c:'sub',t:'Due today',d};
+  return -d<=3?{k:'soon',c:'sub',t:'Due in '+plural(-d,'day'),d}:{k:'open',c:'prog',t:'Due in '+plural(-d,'day'),d};
+}
+const jDone=j=>j.status==='Completed'||j.status==='Closed',jOpen=j=>j.status==='Pending'||j.status==='In Progress';
+function gtModel(){
+  const today=dnum(todayStr()),jos=S.jos.filter(j=>jDone(j)||jOpen(j));
+  const items=jos.map(j=>{
+    const done=jDone(j),endRaw=dnum(j.completed_at)??dnum(j.closed_at),start=dnum(j.requested_at)??today,target=dnum(j.target_date);
+    const end=done?(endRaw??start):Math.max(today,start),sc=sched(target,done&&endRaw!=null,end,today);
+    const base=dnum(j.team_assigned_at)??dnum(j.approved_at)??start;
+    const tasks=S.tasks.filter(t=>t.jo_id===j.jo_id).map(t=>{
+      const cx=t.status==='Cancelled',td=t.status==='Completed'&&t.progress>=100,te=dnum(t.completed_at),ts=dnum(t.start_date)??base,tt=dnum(t.due_date);
+      const e=td?(te??ts):Math.max(today,ts),s=Math.min(ts,e);
+      return {t,cx,done:td,start:s,end:e,target:tt,sc:cx?null:sched(tt,td&&te!=null,e,today)};
+    });
+    return {j,done,start,end,target,sc,tasks};
+  });
+  return {today,items};
+}
+function gtStats(m){
+  const J=m.items,T=[].concat(...J.map(i=>i.tasks.filter(t=>!t.cx&&t.sc))),today=m.today;
+  const fin=J.filter(i=>i.done&&i.target!=null),on=fin.filter(i=>i.sc.k==='ok'),late=fin.filter(i=>i.sc.k==='late');
+  const tf=T.filter(t=>t.done&&t.target!=null),ton=tf.filter(t=>t.sc.k==='ok');
+  const pct=(a,b)=>b?Math.round(a/b*100)+'%':'–';
+  return {
+    onJ:pct(on.length,fin.length),onT:pct(ton.length,tf.length),finJ:fin.length,
+    avgLate:late.length?(late.reduce((s,i)=>s+i.sc.d,0)/late.length):0,nLate:late.length,
+    overJ:J.filter(i=>!i.done&&i.sc.k==='over').length,overT:T.filter(t=>!t.done&&t.sc.k==='over').length,
+    soonJ:J.filter(i=>!i.done&&i.target!=null&&i.target>=today&&i.target-today<=7).length
+  };
+}
+function timeline(){
+  const m=gtModel(),st=gtStats(m),px=gt.px;
+  let rows=m.items.filter(i=>gt.f==='all'||(gt.f==='active'?!i.done:i.done));
+  rows.sort((a,b)=>gt.f==='done'||(gt.f==='all'&&a.done&&b.done)?(b.end-a.end):((a.done-b.done)||((a.target??1e9)-(b.target??1e9))||(a.start-b.start)));
+  const tiles=`<div class="gtiles">
+    <div class="gtl ${st.onJ!=='–'&&parseInt(st.onJ)>=80?'ok':''}"><b>${st.onJ}</b><span>Job orders finished on time</span><small>${st.finJ?`${plural(st.finJ,'finished job order')} with a target date. Tasks on time: ${st.onT}`:'No finished job orders with a target date yet'}</small></div>
+    <div class="gtl ${st.nLate?'bad':''}"><b>${st.nLate?st.avgLate.toFixed(1)+' d':'–'}</b><span>Average delay when late</span><small>${st.nLate?plural(st.nLate,'job order')+' finished late':'Nothing finished late'}</small></div>
+    <div class="gtl ${st.overJ||st.overT?'bad':''}"><b>${st.overJ}</b><span>Job orders overdue now</span><small>${plural(st.overT,'task')} overdue</small></div>
+    <div class="gtl"><b>${st.soonJ}</b><span>Job orders due in 7 days</span><small>Still open, target date this week</small></div></div>`;
+  const bar=`<div class="gtb"><div class="seg" role="group" aria-label="Show">${[['active','In progress'],['done','Completed'],['all','All']].map(([k,l])=>`<button type="button" data-a="gtf" data-v="${k}" class="${gt.f===k?'on':''}">${l}</button>`).join('')}</div>
+    <div class="seg" role="group" aria-label="Zoom">${[[6,'Month'],[14,'Week'],[30,'Day']].map(([v,l])=>`<button type="button" data-a="gtz" data-v="${v}" class="${gt.px===v?'on':''}">${l}</button>`).join('')}</div>
+    <span class="sp"></span><button class="btn sm ghost" type="button" data-a="gtall">${rows.every(i=>gt.open[i.j.jo_id])&&rows.length?'Hide tasks':'Show all tasks'}</button></div>`;
+  const legend=`<div class="gleg"><span><i class="lb" style="background:var(--done)"></i>Finished</span><span><i class="lb" style="background:var(--prog)"></i>In progress</span><span><i class="lb" style="background:var(--bad)"></i>Past the target date</span><span><i class="ld"></i>Target date</span><span><i class="ll"></i>Today</span></div>`;
+  if(!rows.length)return tiles+bar+`<div class="sec">${empty('Nothing to show here','Job orders appear once a manager has approved them.')}</div>`;
+  /* time axis */
+  let lo=1e9,hi=-1e9;
+  rows.forEach(i=>{[i.start,i.end,i.target].forEach(v=>{if(v!=null){lo=Math.min(lo,v);hi=Math.max(hi,v)}});i.tasks.forEach(t=>{[t.start,t.end,t.target].forEach(v=>{if(v!=null){lo=Math.min(lo,v);hi=Math.max(hi,v)}})})});
+  lo=Math.min(lo,m.today)-3;hi=Math.max(hi,m.today)+7;
+  const W=(hi-lo+1)*px,X=d=>(d-lo)*px,XC=d=>(d-lo+.5)*px;
+  const mon0=lo+((7-((lo+3)%7))%7),grid=`background-size:${7*px}px 100%;background-position:${(mon0-lo)*px}px 0`;
+  let head='';
+  for(let d=lo;d<=hi;d++){const dd=new Date(d*864e5);
+    if(dd.getUTCDate()===1)head+=`<span class="tick" style="left:${X(d)}px"></span><span class="mo" style="left:${X(d)}px">${dd.toLocaleDateString(undefined,{month:'short',year:'numeric',timeZone:'UTC'})}</span>`;
+    if((d+3)%7===0&&(px>=14||((d-mon0)/7)%2===0))head+=`<span class="dy" style="left:${X(d)}px">${dd.getUTCDate()}</span>`}
+  if(!head.includes('class="mo"'))head+=`<span class="mo" style="left:0">${dlabel(lo)}</span>`;
+  const mk=(s,e,target,done,prog,sc)=>{
+    const w=(a,b)=>Math.max((b-a+1)*px,6);let out='';
+    const late=target!=null&&e>target&&target>=s;
+    if(late){const tx=target;
+      out+=`<div class="gb ${done?'done':'base'} part" style="left:${X(s)}px;width:${w(s,tx)}px">${done?'':`<i style="width:${prog}%"></i>`}</div>`;
+      out+=`<div class="gb ${done?'late':'lateopen'} partl" style="left:${X(tx+1)}px;width:${w(tx+1,e)-px}px" title="${esc(sc.t)}"></div>`}
+    else if(target!=null&&e>target&&target<s)out+=`<div class="gb ${done?'late':'lateopen'}" style="left:${X(s)}px;width:${w(s,e)}px" title="${esc(sc.t)}"></div>`;
+    else out+=done?`<div class="gb done" style="left:${X(s)}px;width:${w(s,e)}px"></div>`:`<div class="gb base" style="left:${X(s)}px;width:${w(s,e)}px"><i style="width:${prog}%"></i></div>`;
+    if(target!=null)out+=`<span class="gm" style="left:${XC(target)}px" title="Target date: ${esc(dlabel(target))}"></span>`;
+    return out};
+  const rowsH=rows.map(i=>{
+    const j=i.j,op=gt.open[j.jo_id],nT=i.tasks.length;
+    const dates=`Target ${i.target!=null?dlabel(i.target):'not set'}${i.done?' · Finished '+dlabel(i.end):''}`;
+    let h=`<div class="gr"><div class="gl"><button type="button" class="gx${nT?'':' sp0'}" data-a="gtx" data-id="${j.jo_id}" aria-expanded="${!!op}" aria-label="Show tasks">${op?'▾':'▸'}</button><div class="gt2"><b role="button" tabindex="0" data-a="open" data-id="${j.jo_id}" title="${esc(j.title)}">${esc(j.title)}</b><small>${esc(j.jo_number)} · ${esc(nm(j.assigned_developer))} · ${plural(nT,'task')}</small><span class="chip c-${i.sc.c}"><i></i>${esc(i.sc.t)}</span></div></div>
+      <div class="gtk" style="width:${W}px;${grid}" title="${esc(dates)}">${mk(i.start,i.end,i.target,i.done,j.progress,i.sc)}</div></div>`;
+    if(op)h+=i.tasks.map(k=>{const t=k.t;
+      return `<div class="gr tk2${k.cx?' cx':''}"><div class="gl"><div class="gt2"><b title="${esc(t.task_name)}">${esc(t.task_name)}</b><small>${esc(nm(t.assigned_to))} · ${esc(t.task_type==='Others'&&t.task_type_other?t.task_type_other:t.task_type)}</small>${k.cx?'<span class="chip c-bad"><i></i>Cancelled</span>':`<span class="chip c-${k.sc.c}"><i></i>${esc(k.sc.t)}</span>`}</div></div>
+        <div class="gtk" style="width:${W}px;${grid}" title="${esc('Due '+(k.target!=null?dlabel(k.target):'not set')+(k.done?' · Finished '+dlabel(k.end):''))}">${k.cx?'':mk(k.start,k.end,k.target,k.done,t.progress,k.sc)}</div></div>`}).join('');
+    return h}).join('');
+  return tiles+bar+legend+`<div class="gt" id="gt" tabindex="0" aria-label="Timeline chart"><div class="gin"><div class="gr gh"><div class="gl">Job order</div><div class="gtk" style="width:${W}px">${head}</div></div>${rowsH}<span class="gtd" id="gtd" style="left:calc(var(--lw) + ${XC(m.today)}px)"></span></div></div>`;
+}
+
 /* ============ render ============ */
 function render(){
   if(!S)return;
   const m=S.me,sy=scrollY,bl=($('.board')||{}).scrollLeft||0;
-  const pages=[['dash','Dashboard','grid'],['jos','Job orders','clip']];
+  const pages=[['dash','Dashboard','grid'],['jos','Job orders','clip'],['time','Timeline','gantt']];
   if(m.staff)pages.push(['users','Users','users'],['teams','Teams','team']);
   if(m.super)pages.push(['log','Activity log','shield']);
   if(!pages.some(p=>p[0]===ui.page))ui.page='dash';
@@ -847,18 +973,23 @@ function render(){
   const nav=pages.map(([k,l,i])=>`<button class="nv${ui.page===k?' on':''}" data-a="nav" data-p="${k}"${ui.page===k?' aria-current="page"':''}>${ic(i,20)}<span>${l}</span>${k==='jos'&&wait?`<span class="n" aria-label="${wait} awaiting review">${wait}</span>`:''}</button>`).join('');
   $('#nav').innerHTML=nav;$('#tabs').innerHTML=nav;
   $('#me').innerHTML=`<button class="wb" data-a="account" title="Your account">${av(m.email,'lg')}<span class="who"><b>${esc(m.name)}</b><small>${esc(m.role)}</small></span></button><button class="ib" data-a="signout" title="Sign out" aria-label="Sign out">${ic('out')}</button>`;
-  const meta={dash:[greet(),ROLE_SUB[m.role]],jos:['Job orders',S.jos.length+' in total'],users:['Users','Who can sign in, and what they can do'],teams:['Teams','Developer teams and their workload'],log:['Activity log','Sign-ins and account changes']}[ui.page];
+  const meta={dash:[greet(),ROLE_SUB[m.role]],jos:['Job orders',S.jos.length+' in total'],time:['Timeline','Target dates against actual completion'],users:['Users','Who can sign in, and what they can do'],teams:['Teams','Developer teams and their workload'],log:['Activity log','Sign-ins and account changes']}[ui.page];
   $('#ptitle').textContent=meta[0];$('#psub').textContent=meta[1];
   $('#rf').innerHTML=ic('refresh');$('#newbtn').innerHTML=ic('plus',16)+'<span>New request</span>';
   $('#newbtn').style.display=(ui.page==='dash'||ui.page==='jos')?'':'none';
   document.querySelector('.m-out').innerHTML=av(m.email,'lg');$('#mwho').textContent=m.name+' ('+m.role+')';
-  $('#main').innerHTML={dash,jos,users,teams,log:logPage}[ui.page]();
+  $('#main').innerHTML={dash,jos,time:timeline,users,teams,log:logPage}[ui.page]();
+  const gtEl=$('#gt');if(gtEl){const m0=gtEl.querySelector('.gtd');const lw=parseFloat(getComputedStyle(gtEl).getPropertyValue('--lw'))||0;gtEl.scrollLeft=gt.L!=null?gt.L:Math.max(0,(m0?m0.offsetLeft:0)-lw-(gtEl.clientWidth-lw)*.55);gt.L=gtEl.scrollLeft;gtEl.onscroll=()=>{gt.L=gtEl.scrollLeft}}
   scrollTo(0,sy);const b=$('.board');if(b)b.scrollLeft=bl;
   drawer();
 }
 
 /* ============ events ============ */
 const H={
+  gtf:el=>{gt.f=el.dataset.v;gt.L=null;render()},
+  gtz:el=>{const g=$('#gt'),c=g?(g.scrollLeft+g.clientWidth/2):0;gt.px=+el.dataset.v;gt.L=null;render()},
+  gtx:el=>{gt.open[el.dataset.id]=!gt.open[el.dataset.id];render()},
+  gtall:()=>{const ids=S.jos.filter(j=>(gt.f==='all'||(gt.f==='active'?!(j.status==='Completed'||j.status==='Closed'):(j.status==='Completed'||j.status==='Closed')))&&(j.status==='Pending'||j.status==='In Progress'||j.status==='Completed'||j.status==='Closed')).map(j=>j.jo_id),all=ids.every(i=>gt.open[i]);ids.forEach(i=>gt.open[i]=!all);render()},
   nav:el=>{ui.page=el.dataset.p;ui.jo=null;ui.q='';if(ui.page==='log')loadLog();else render();scrollTo(0,0)},
   open:el=>{ui.jo=el.dataset.id;drawer()},
   addfiles:el=>addFiles(jobOf(el.dataset.id)),
