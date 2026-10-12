@@ -962,26 +962,34 @@ showLogin('');initGoogle();
 /* ---- installable app (PWA): offers installation with a pop-up; the browser then shows its own confirmation ---- */
 let installEv=null;
 const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1),isStandalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+const UA=navigator.userAgent,isAndroid=/android/i.test(UA),inApp=/FBAN|FBAV|FB_IAB|Messenger|Instagram|Line\/|Telegram|Snapchat|Twitter|LinkedInApp|; wv\)/i.test(UA);
+let pwaMode='install';
+const pageUrl=()=>location.href.split('#')[0].split('?')[0];
+const copyLink=()=>{const u=pageUrl();const ok=()=>toast('Link copied. Paste it in your browser to install JOMM.');try{navigator.clipboard.writeText(u).then(ok,()=>prompt('Copy this link',u))}catch(e){prompt('Copy this link',u)}};
 const pwaSnoozed=()=>{try{return Date.now()<+localStorage.getItem('jomm_pwa_snooze')}catch(e){return false}};
 const pwaSnooze=d=>{try{localStorage.setItem('jomm_pwa_snooze',String(Date.now()+d*864e5))}catch(e){}};
 function pwaHide(){const e=$('#pwap');if(e)e.hidden=true}
 function pwaShow(){
   if(isStandalone()||pwaSnoozed())return;
-  if(!installEv&&!isIOS)return;
+  if(!installEv&&!isIOS&&!(isAndroid&&pwaMode==='open'))return;
   const e=$('#pwap'),d=$('#pwapd');
-  if(installEv){d.textContent='Open JOMM like an app from your home screen, in its own window.'}
+  if(installEv){pwaMode='install';d.textContent='Open JOMM like an app from your home screen, in its own window.'}
+  else if(pwaMode==='open'){d.innerHTML='<span>Installing is not available in this browser or in-app view (Messenger, Telegram, Facebook...). Open JOMM in <b>Chrome</b> to install it.</span>'}
   else{   /* iPhone and iPad: Apple does not let a website add itself, so we walk the person through the two taps */
     const share='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M5 11v8a2 2 0 002 2h10a2 2 0 002-2v-8"/></svg>',plus='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:-2px"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M12 8v8M8 12h8"/></svg>';
     const safari=/safari/i.test(navigator.userAgent)&&!/crios|fxios|edgios|fbav|fban|instagram|line\//i.test(navigator.userAgent);
+    pwaMode=safari?'ios':'ioscopy';
     d.innerHTML=safari?`<span>1. Tap ${share} <b>Share</b> at the bottom of the screen.</span><span>2. Scroll down and tap ${plus} <b>Add to Home Screen</b>.</span><span>3. Tap <b>Add</b>.</span>`
-      :`<span>Open this page in <b>Safari</b> first (tap the ⋯ or Share menu, then Open in Safari). Then tap ${share} <b>Share</b> and <b>Add to Home Screen</b>.</span>`;
+      :`<span>This in-app browser cannot add apps. Tap <b>Copy link</b>, open <b>Safari</b>, paste it, then tap ${share} <b>Share</b> and <b>Add to Home Screen</b>. (Or tap ⋯ and choose <b>Open in Safari</b>.)</span>`;
   }
-  $('#pwapi').textContent=installEv?'Install':(navigator.share?'Open Share menu':'Got it');e.classList.toggle('ios',!installEv);e.hidden=false;
+  $('#pwapi').textContent=installEv?'Install':pwaMode==='open'?'Open in Chrome':pwaMode==='ioscopy'?'Copy link':(navigator.share?'Open Share menu':'Got it');e.classList.toggle('ios',!installEv);e.hidden=false;
 }
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEv=e;setTimeout(pwaShow,1500)});
-window.addEventListener('appinstalled',()=>{installEv=null;pwaHide();toast('JOMM was installed on this device')});
+window.addEventListener('appinstalled',()=>{try{localStorage.setItem('jomm_installed','1')}catch(e){}installEv=null;pwaHide();toast('JOMM was installed on this device')});
 $('#pwapi').onclick=async()=>{
   if(!installEv){
+    if(pwaMode==='open'){const u=pageUrl();pwaSnooze(1);location.href='intent://'+u.replace(/^https?:\/\//,'')+'#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url='+encodeURIComponent(u)+';end';return}
+    if(pwaMode==='ioscopy'){copyLink();return}
     /* A website cannot add itself on iOS. This opens the share menu so Add to Home Screen is one tap away. */
     if(navigator.share){try{await navigator.share({title:'JOMM',url:location.href.split('#')[0]});pwaHide();pwaSnooze(30)}catch(x){/* menu closed: keep the steps on screen */}return}
     pwaHide();pwaSnooze(30);return
@@ -991,6 +999,13 @@ $('#pwapi').onclick=async()=>{
 };
 $('#pwapn').onclick=()=>{pwaHide();pwaSnooze(7)};
 if(isIOS)setTimeout(pwaShow,2500);
+/* Android in-app browsers (Messenger, Telegram, Facebook...) never offer installation: say so and offer Chrome. */
+if(isAndroid&&!isStandalone()){
+  try{if(isStandalone())localStorage.setItem('jomm_installed','1')}catch(e){}
+  const known=()=>{try{return !!localStorage.getItem('jomm_installed')}catch(e){return false}};
+  setTimeout(()=>{if(!installEv&&!known()){pwaMode='open';pwaShow()}},inApp?1500:6000);
+}
+if(isStandalone()){try{localStorage.setItem('jomm_installed','1')}catch(e){}}
 /* Say so when the connection drops instead of failing silently. */
 addEventListener('offline',()=>toast('You are offline. JOMM needs a connection to load and save data.','err'));
 addEventListener('online',()=>toast('Back online'));
