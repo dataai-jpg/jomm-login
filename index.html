@@ -232,6 +232,38 @@ dialog::backdrop{background:rgba(8,16,27,.55)}
   .dfoot{position:sticky;bottom:0;background:var(--surface);border-top:1px solid var(--line)}.dfoot .btn{flex:1}
   .stages div{font-size:11px}
 }
+
+/* verification pop-up */
+.vm{position:fixed;inset:0;z-index:200;display:grid;place-items:center;background:rgba(8,16,27,.55);padding:20px}
+.vm[hidden]{display:none}
+.vm .box{background:var(--surface);color:var(--ink);border-radius:16px;padding:26px 26px 22px;width:min(380px,100%);text-align:center;box-shadow:0 24px 70px rgba(0,0,0,.35)}
+.vm .big{width:40px;height:40px;border:3px solid var(--brand);border-right-color:transparent;border-radius:50%;animation:sp .8s linear infinite;margin:0 auto 14px}
+.vm.err .big{display:none}
+.vm h3{margin:0 0 6px;font-size:17px}.vm p{margin:0;color:var(--mut)}
+.vm .vacts{display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap}.vm .vacts:empty{display:none}
+/* file picker */
+.pick{display:inline-flex;align-items:center;gap:8px;border:1.5px dashed var(--line2);border-radius:9px;padding:9px 14px;font-weight:600;cursor:pointer;background:var(--surface2);width:100%;justify-content:center}
+.pick:hover{border-color:var(--brand);color:var(--brand)}
+.pick[disabled]{opacity:.6;cursor:not-allowed}
+.fl{list-style:none;margin:8px 0 0;padding:0}
+.fl li{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:9px;margin-top:6px;background:var(--surface2)}
+.fl .fn{flex:1;min-width:0}.fl .fn b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.fl .fn small{color:var(--mut);font-size:12.5px;display:block;margin:0}
+.fl .bad .fn small,.fl .failed .fn small{color:var(--bad)}.fl .done .fn small{color:var(--ok,#1a7f4b)}
+.fl .fb{height:4px;border-radius:3px;background:var(--line);overflow:hidden;margin-top:5px;display:none}
+.fl .uploading .fb{display:block}.fl .fb i{display:block;height:100%;width:40%;background:var(--brand);border-radius:3px;animation:ind 1.1s ease-in-out infinite}
+@keyframes ind{0%{margin-left:-40%}100%{margin-left:100%}}
+.fl .rm{border:0;background:transparent;color:var(--mut);cursor:pointer;font-size:18px;line-height:1;padding:4px 8px;border-radius:7px}.fl .rm:hover{background:var(--line)}.fl .rm[disabled]{visibility:hidden}
+.subst{display:none;margin:12px 22px 0;padding:9px 12px;border-radius:9px;background:color-mix(in srgb,var(--brand) 10%,transparent);align-items:center;gap:10px}
+.subst.on{display:flex}.subst .spin{display:inline-block;flex:none}
+.pcn{display:flex;gap:8px;align-items:center}.pcn input[type=number]{width:88px;flex:none}.pcn input[type=range]{flex:1;min-height:0;padding:0}
+.pct{font-weight:700;font-size:15px;min-width:42px;text-align:right}
+.td{white-space:pre-wrap;word-break:break-word;color:var(--mut);margin:6px 0 2px;max-height:240px;overflow:auto}
+.tdd summary{cursor:pointer;color:var(--brand);font-weight:600;font-size:12.5px;margin-top:4px}
+.fr{display:flex;align-items:center;gap:10px;padding:9px 16px;border-bottom:1px solid var(--line)}.fr:last-child{border:0}
+.fr .fn{flex:1;min-width:0}.fr .fn b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fr .fn small{color:var(--mut)}
+.tl .fchips{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}.tl .fchips .btn{max-width:100%}.tl .rtext{white-space:pre-wrap;word-break:break-word}
+dialog textarea{max-height:40vh}
 </style></head>
 <body>
 <div id="topbar" aria-hidden="true"></div>
@@ -247,7 +279,7 @@ dialog::backdrop{background:rgba(8,16,27,.55)}
     <h2 id="ltitle">Sign in</h2><p id="lmsg">Use your Google account to continue.</p>
     <div class="lerr" id="lerr" role="alert"></div>
     <div id="gbtn" style="margin-top:20px;min-height:44px"></div>
-    <button class="btn lbtn" id="lgo" type="button" disabled hidden><span class="spin" aria-hidden="true"></span><span id="lgol">Verifying your account…</span></button>
+    
     <p class="lnote" id="lswitch" hidden>Wrong account? Pick another one in the Google button above, or choose <b>Use another account</b> in its window.</p>
     <p class="lnote" style="color:var(--mut)">Only registered, active accounts can sign in. Ask your manager if you need access.</p>
   </div></div>
@@ -275,12 +307,13 @@ dialog::backdrop{background:rgba(8,16,27,.55)}
 <div id="scrim" data-a="close"></div>
 <aside id="drawer" aria-label="Job order details"></aside>
 <dialog id="dlg"></dialog>
+<div class="vm" id="vm" hidden role="alertdialog" aria-modal="true" aria-labelledby="vmt" aria-describedby="vmd"><div class="box"><div class="big" aria-hidden="true"></div><h3 id="vmt"></h3><p id="vmd"></p><div class="vacts" id="vma"></div></div></div>
 <div id="toasts" aria-live="polite"></div>
 
 <script>
 /* ============ state & helpers ============ */
 let S=null;
-const ui={page:'dash',q:'',st:'',pr:'',view:innerWidth<760?'list':'board',jo:null,pending:0,log:null};
+const ui={page:'dash',q:'',st:'',pr:'',view:innerWidth<760?'list':'board',jo:null,pending:0,log:null,detail:{},dl:{},tok:null,exp:0};
 const $=(s,r=document)=>r.querySelector(s);
 const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const msgOf=e=>String(e&&e.message||e||'').replace(/^Error:\s*/,'');
@@ -323,31 +356,65 @@ const sorted=a=>a.slice().sort((x,y)=>String(y.requested_at).localeCompare(Strin
 
 /* ============ server calls with loading state ============ */
 function busy(){document.body.classList.toggle('loading',ui.pending>0)}
-const READS=['login','bootstrap','securityLog'];
-async function call(fn,arg,tries){
-  const c=window.JOMM_CONFIG;tries=tries||0;
+/* ---- network: one place for timeouts, safe retries and the "result unknown" case ---- */
+class NetErr extends Error{}   /* no confirmed answer from the server: the request may or may not have been processed */
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const READS=['login','bootstrap','securityLog','jobDetail','checkSubmission','downloadFile'];
+const SAFE=READS.concat(['uploadFile']);   /* safe to repeat: reads, and uploads (the server ignores a repeated upload ID) */
+async function post(fn,arg,o){
+  const c=window.JOMM_CONFIG;
   if(!ui.tok)throw new Error('ACCESS:Please sign in with your Google account.');
-  let o;
+  if(ui.exp&&Date.now()>ui.exp*1000-10000)throw new Error('ACCESS:Your Google sign-in expired. Please sign in again.');
+  const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),o.timeout||45000);
+  if(o.signal)o.signal.addEventListener('abort',()=>ctl.abort());
+  let r;
   try{
-    const r=await fetch(c.BACKEND_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({token:ui.tok,fn,arg:arg===undefined?null:arg})});
-    o=await r.json();
-  }catch(e){
-    /* Google's servers sometimes fail briefly. Reads are safe to repeat; saves are not, so those ask the person to retry. */
-    if(READS.indexOf(fn)>=0&&tries<2){await new Promise(k=>setTimeout(k,1200*(tries+1)));return call(fn,arg,tries+1)}
-    throw new Error(READS.indexOf(fn)>=0?'The service is busy right now. Please try again in a moment.':'The service did not respond, so your change may not have been saved. Refresh to check, then try again.');
+    const res=await fetch(c.BACKEND_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({token:ui.tok,fn,arg:arg===undefined?null:arg}),signal:ctl.signal});
+    r=await res.json();
+  }catch(e){throw new NetErr(ctl.signal.aborted?'The service took too long to respond.':'Cannot reach the JOMM service. Check your connection.')}
+  finally{clearTimeout(tm)}
+  if(!r.ok)throw new Error(r.error||'Something went wrong. Please try again.');
+  return r;
+}
+async function call(fn,arg,o){
+  o=o||{};const t0=performance.now();let tries=0;const max=o.retries===undefined?2:o.retries;
+  for(;;){
+    try{
+      const r=await post(fn,arg,o);
+      ui.perf={fn,total:Math.round(performance.now()-t0),server:r.ms};console.info('[JOMM] '+fn+': '+ui.perf.total+' ms (server '+r.ms+' ms)');
+      return r.data;
+    }catch(e){
+      if(e instanceof NetErr&&SAFE.indexOf(fn)>=0&&tries<max&&!(o.signal&&o.signal.aborted)){tries++;await sleep(1200*tries);continue}
+      if(e instanceof NetErr&&SAFE.indexOf(fn)<0)e.message='The service did not respond, so your change may not have been saved. Refresh to check, then try again.';
+      throw e;
+    }
   }
-  if(!o.ok)throw new Error(o.error||'Something went wrong. Please try again.');
-  return o.data;
 }
-async function rpc(fn,arg){
+async function rpc(fn,arg,o){
   ui.pending++;busy();
-  try{return await call(fn,arg)}finally{ui.pending--;busy()}
+  try{return await call(fn,arg,o)}finally{ui.pending--;busy()}
 }
-/* Runs an action. Returns null on success, or an error message. */
+const strip=d=>{ui.result=d&&d.result;if(d)delete d.result;return d};
+/* After any change, the open job order's timeline and files are fetched again. */
+function afterWrite(){const cur=ui.jo,keep=cur&&ui.detail[cur];ui.detail={};if(cur){if(keep)ui.detail[cur]=keep;loadDetail(cur,true)}}
+async function loadDetail(id,quiet){
+  if(ui.dl[id]){ui.dl[id]=2;return}   /* a load is already running: run once more when it ends so newer changes are included */
+  ui.dl[id]=1;let again=false;
+  try{ui.detail[id]=await rpc('jobDetail',{jo_id:id})}
+  catch(e){const m=msgOf(e);if(m.indexOf('ACCESS:')>=0){delete ui.dl[id];showLogin(m.split('ACCESS:')[1]);return}if(!quiet||!ui.detail[id])ui.detail[id]={history:[],updates:[],files:[],error:m}}
+  finally{again=ui.dl[id]===2;delete ui.dl[id]}
+  if(ui.jo===id)drawer();
+  if(again)return loadDetail(id,true);
+}
+/* Runs an action. Returns null on success, or an error message. The same action cannot run twice at once. */
+const inflight={};
 async function act(fn,arg,okMsg,quiet){
-  try{S=await rpc(fn,arg);render();if(okMsg)toast(okMsg);return null}
+  if(inflight[fn])return 'Please wait. The previous request is still running.';
+  inflight[fn]=1;
+  try{S=strip(await rpc(fn,arg));render();if(fn!=='bootstrap')afterWrite();if(okMsg)toast(okMsg);return null}
   catch(e){const m=msgOf(e);if(m.indexOf('ACCESS:')>=0){showLogin(m.split('ACCESS:')[1]);return m}
     if(!quiet)toast(m||'Something went wrong. Please try again.','err');return m||'Something went wrong. Please try again.'}
+  finally{delete inflight[fn]}
 }
 function toast(m,type){
   const t=document.createElement('div');t.className='toast'+(type==='err'?' err':'');t.setAttribute('role',type==='err'?'alert':'status');
@@ -364,22 +431,23 @@ function optsHtml(list,v,ph){
 function field(f){
   const id='f_'+f.k,lab=`<label for="${id}">${esc(f.l)}${f.req?' <i aria-hidden="true">*</i>':''}</label>`,hint=f.hint?`<small>${esc(f.hint)}</small>`:'';
   if(f.t==='check')return `<label class="chk"><input type="checkbox" id="${id}"${f.v?' checked':''}><span>${esc(f.l)}</span></label>${hint}`;
-  if(f.t==='progress'){const v=f.v||0;return `<div class="fld">${lab}<div class="pc"><input type="range" id="${id}" min="0" max="100" step="1" value="${v}"><output id="po">${v}%</output></div><div class="qk">${[0,25,50,75,100].map(n=>`<button type="button" data-q="${n}">${n===100?'Done':n+'%'}</button>`).join('')}</div><div style="margin-top:8px" id="pst">${chip(pstat(v))}</div>${hint}</div>`}
+  if(f.t==='pct'){const v=f.v||0;return `<div class="fld">${lab}<div class="pcn"><input type="number" id="${id}" min="0" max="100" step="1" inputmode="numeric" value="${v}"><b>%</b><input type="range" id="f_prange" min="0" max="100" step="1" value="${v}" aria-label="Progress slider"></div><div class="qk">${[0,25,50,75,100].map(n=>`<button type="button" data-q="${n}">${n===100?'Done':n+'%'}</button>`).join('')}</div><div style="margin-top:8px" id="pst">${chip(pstat(v))}</div>${hint}</div>`}
   let c;
   if(f.t==='select')c=`<select id="${id}">${optsHtml(f.o,f.v,f.ph)}</select>`;
   else if(f.t==='area')c=`<textarea id="${id}" rows="${f.rows||3}" maxlength="${f.max||1000}">${esc(f.v)}</textarea>`;
   else c=`<input id="${id}" type="${f.t||'text'}" value="${esc(f.v)}"${f.ro?' readonly':''}${f.max?` maxlength="${f.max}"`:''}${f.min?` min="${f.min}"`:''}>`;
   return `<div class="fld">${lab}${c}${hint}</div>`;
 }
+let dlgWord='Working…';
 function setDlgBusy(b){
-  dlgBusy=b;const ok=$('#dok');if(!ok)return;ok.disabled=b;ok.classList.toggle('busy',b);ok.querySelector('.bl').textContent=b?'Working…':ok.dataset.l;
+  dlgBusy=b;const ok=$('#dok');if(!ok)return;ok.disabled=b;ok.classList.toggle('busy',b);ok.querySelector('.bl').textContent=b?dlgWord:ok.dataset.l;
   const x=$('#dx');if(x)x.disabled=b;
 }
 function showErr(m){const e=$('#derr');if(e){e.textContent=m;e.hidden=false}}
 /* o: {title, desc, fields, label, danger, onSubmit(values) -> null | error message, after(dialog)} */
 function dialog(o){
-  const d=$('#dlg'),fs=o.fields||[];
-  d.innerHTML=`<form id="df" novalidate><div class="dh"><h2>${esc(o.title)}</h2><button type="button" class="ib" id="dxx" aria-label="Close">${ic('x')}</button></div>${o.desc?`<p class="dd">${esc(o.desc)}</p>`:''}${o.html||''}<div class="derr" id="derr" role="alert" hidden></div><div class="dfs">${fs.map(field).join('')}</div><div class="dfoot"><button type="button" class="btn ghost" id="dx">${esc(o.cancel||'Cancel')}</button><button class="btn${o.danger?' danger':''}" id="dok" data-l="${esc(o.label||'Save')}"><span class="spin" aria-hidden="true"></span><span class="bl">${esc(o.label||'Save')}</span></button></div></form>`;
+  const d=$('#dlg'),fs=o.fields||[];dlgWord=o.busy||'Working…';
+  d.innerHTML=`<form id="df" novalidate><div class="dh"><h2>${esc(o.title)}</h2><button type="button" class="ib" id="dxx" aria-label="Close">${ic('x')}</button></div>${o.desc?`<p class="dd">${esc(o.desc)}</p>`:''}${o.html||''}<div class="derr" id="derr" role="alert" hidden></div><div class="dfs">${fs.map(field).join('')}${o.html2||''}</div><div class="dfoot"><button type="button" class="btn ghost" id="dx">${esc(o.cancel||'Cancel')}</button><button class="btn${o.danger?' danger':''}" id="dok" data-l="${esc(o.label||'Save')}"><span class="spin" aria-hidden="true"></span><span class="bl">${esc(o.label||'Save')}</span></button></div></form>`;
   const close=()=>{if(!dlgBusy)d.close()};
   $('#dx').onclick=close;$('#dxx').onclick=close;d.oncancel=e=>{if(dlgBusy)e.preventDefault()};
   $('#df').onsubmit=async e=>{
@@ -387,19 +455,87 @@ function dialog(o){
     const v={};fs.forEach(f=>{const el=$('#f_'+f.k);v[f.k]=f.t==='check'?el.checked:el.value});
     const miss=fs.find(f=>f.req&&!String(v[f.k]).trim());
     if(miss){showErr(miss.l+' is required.');$('#f_'+miss.k).focus();return}
+    const bad=o.validate&&o.validate(v);if(bad){showErr(bad);return}
     $('#derr').hidden=true;setDlgBusy(true);
     let err=null;try{err=await o.onSubmit(v)}catch(x){err=msgOf(x)||'Something went wrong. Please try again.'}
     setDlgBusy(false);
     if(err)showErr(err);else d.close();
   };
   d.showModal();
+  d.querySelectorAll('textarea').forEach(t=>{const g=()=>{t.style.height='auto';t.style.height=Math.min(t.scrollHeight+2,Math.round(innerHeight*.4))+'px'};t.addEventListener('input',g);g()});
   if(o.after)o.after(d);
-  const ff=fs.find(f=>!f.ro&&f.t!=='progress'&&f.t!=='check');if(ff)$('#f_'+ff.k).focus();
+  const ff=fs.find(f=>!f.ro&&f.t!=='pct'&&f.t!=='check');if(ff)$('#f_'+ff.k).focus();
 }
 function wireProgress(){
-  const r=$('#f_progress');if(!r)return;
-  const upd=()=>{$('#po').textContent=r.value+'%';$('#pst').innerHTML=chip(pstat(+r.value))};
-  r.oninput=upd;document.querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>{r.value=b.dataset.q;upd()});
+  const n=$('#f_progress'),r=$('#f_prange');if(!n||!r)return;
+  const clamp=x=>Math.max(0,Math.min(100,Math.round(+x||0)));
+  const show=v=>{$('#pst').innerHTML=chip(pstat(clamp(v)))};
+  r.oninput=()=>{n.value=r.value;show(r.value)};
+  n.oninput=()=>{if(/^\d{1,3}$/.test(n.value.trim())&&+n.value<=100){r.value=n.value;show(n.value)}};
+  document.querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>{n.value=b.dataset.q;r.value=b.dataset.q;show(n.value)});
+}
+
+/* ============ file attachments ============ */
+const ALLOWED={pdf:1,doc:1,docx:1,xls:1,xlsx:1,ppt:1,pptx:1,csv:1,txt:1,rtf:1,jpg:1,jpeg:1,png:1,gif:1,webp:1};
+const MAXB=10*1024*1024,MAXF=10;
+const uid=()=>(window.crypto&&crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2)).replace(/[^A-Za-z0-9-]/g,'');
+const sz=b=>b<1024?b+' B':b<1048576?Math.round(b/1024)+' KB':(b/1048576).toFixed(1)+' MB';
+const b64=f=>new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(String(r.result).split(',')[1]||'');r.onerror=()=>no(new Error('Could not read '+f.name));r.readAsDataURL(f)});
+/* A file list the person can add to and remove from before sending. */
+function picker(label){
+  const P={items:[],id:'fp'+uid().slice(0,6)};
+  const text={ready:'Ready to upload',uploading:'Uploading…',done:'Uploaded',failed:'Upload failed'};
+  P.html=()=>`<div class="fld" id="${P.id}"><label>${esc(label||'Files')}</label><button type="button" class="pick" data-pk="add">${ic('plus',16)}Add files</button><input type="file" multiple hidden accept="${Object.keys(ALLOWED).map(x=>'.'+x).join(',')}"><ul class="fl" aria-live="polite"></ul><small>PDF, Word, Excel, PowerPoint, CSV, TXT, JPG, PNG, GIF and WEBP. Up to ${MAXF} files, 10 MB each. You can pick several at once.</small></div>`;
+  P.draw=()=>{
+    const h=document.getElementById(P.id);if(!h)return;const busy=P.items.some(i=>i.st==='uploading');
+    h.querySelector('.fl').innerHTML=P.items.map((i,k)=>`<li class="${i.err&&i.st==='invalid'?'bad':i.st}"><span aria-hidden="true">${ic('clip',18)}</span><div class="fn"><b title="${esc(i.f.name)}">${esc(i.f.name)}</b><small>${sz(i.f.size)} · ${esc(i.err||text[i.st]||'')}</small><div class="fb"><i></i></div></div><button type="button" class="rm" data-pk="rm" data-k="${k}" aria-label="Remove ${esc(i.f.name)}"${i.st==='uploading'||i.st==='done'?' disabled':''}>×</button></li>`).join('');
+    h.querySelector('.pick').disabled=busy;
+  };
+  P.mount=()=>{
+    const h=document.getElementById(P.id),inp=h.querySelector('input[type=file]');
+    h.addEventListener('click',e=>{const b=e.target.closest('[data-pk]');if(!b)return;if(b.dataset.pk==='add')inp.click();else{P.items.splice(+b.dataset.k,1);P.draw()}});
+    inp.onchange=()=>{P.add(Array.from(inp.files));inp.value=''};P.draw();
+  };
+  P.add=list=>{
+    list.forEach(f=>{
+      const ext=(f.name.split('.').pop()||'').toLowerCase();let err='';
+      if(P.items.some(i=>i.f.name===f.name&&i.f.size===f.size&&i.f.lastModified===f.lastModified))return;
+      if(!ALLOWED[ext]||f.name.indexOf('.')<0)err='This file type is not allowed';else if(f.size===0)err='The file is empty';else if(f.size>MAXB)err='Larger than 10 MB';
+      else if(P.items.filter(i=>!i.err).length>=MAXF)err='Only '+MAXF+' files at a time';
+      P.items.push({id:uid(),f,err,st:err?'invalid':'ready'});
+    });P.draw();
+  };
+  P.todo=()=>P.items.filter(i=>!i.err&&(i.st==='ready'||i.st==='failed'));
+  P.invalid=()=>P.items.some(i=>i.st==='invalid');
+  P.lock=()=>{const h=document.getElementById(P.id);if(h)h.querySelector('.pick').hidden=true};
+  return P;
+}
+/* Uploads one file at a time. Each file has its own ID, so repeating an upload never creates a second copy. Returns the names that failed. */
+async function uploadAll(P,base){
+  const failed=[];
+  for(const it of P.todo()){
+    it.st='uploading';it.err='';P.draw();
+    try{const data=await b64(it.f);await rpc('uploadFile',Object.assign({},base,{client_id:it.id,name:it.f.name,data}),{timeout:120000});it.st='done'}
+    catch(e){const m=msgOf(e);if(m.indexOf('ACCESS:')>=0)throw e;it.st='failed';it.err=m||'Upload failed';failed.push(it.f.name)}
+    P.draw();
+  }
+  return failed;
+}
+function setSub(state,msg){
+  const e=$('#subst');if(!e)return;
+  if(!state){e.className='subst';e.innerHTML='';return}
+  e.className='subst on';e.innerHTML=`<span class="spin" aria-hidden="true"></span><span><b>${esc(state)}.</b> ${esc(msg||'')}</span>`;
+}
+/* The unsent request survives a refresh: its submission ID is kept so a retry can never create a second request. */
+const DRAFT='jomm_draft';
+const draftGet=()=>{try{return JSON.parse(sessionStorage.getItem(DRAFT)||'null')}catch(e){return null}};
+const draftSet=d=>{try{if(d)sessionStorage.setItem(DRAFT,JSON.stringify(d));else sessionStorage.removeItem(DRAFT)}catch(e){}};
+async function recoverPending(){
+  const dr=draftGet();if(!dr||dr.owner!==S.me.email||dr.state!=='submitting')return;
+  try{
+    const c=await rpc('checkSubmission',{submission_id:dr.sid},{retries:1});
+    if(c.found){draftSet(null);S=strip(await rpc('bootstrap'));render();toast('Your earlier request '+c.jo_number+' was received. It was not submitted twice.')}
+  }catch(e){}
 }
 
 /* ============ developer pickers ============ */
@@ -419,9 +555,61 @@ function devGroups(prefTeam,includeOthers,current){
 }
 
 /* ============ actions (each one asks, shows progress, then confirms) ============ */
-const newJo=()=>dialog({title:'New request',desc:'Describe the work you need. A manager reviews it and assigns a developer.',label:'Submit request',
-  fields:[{k:'title',l:'Title',req:1,max:140},{k:'service_type',l:'Service type',t:'select',o:S.lists.service_types},{k:'description',l:'Details',t:'area',rows:4,max:4000,hint:'What do you need, and why?'},{k:'priority',l:'Priority',t:'select',o:S.lists.priorities,v:'Medium'},{k:'target_date',l:'Target date',t:'date',min:todayStr()}],
-  onSubmit:v=>act('createJO',v,'Request submitted',1)});
+/* Submit states: Idle, Submitting, Checking status, Success, Failed. The Save button stays locked until the outcome is confirmed. */
+async function submitJo(v,sid){
+  const send=()=>rpc('createJO',Object.assign({},v,{submission_id:sid}),{timeout:60000});
+  try{return strip(await send())}
+  catch(e){
+    if(!(e instanceof NetErr))throw e;   /* a definite answer from the server: nothing was created */
+    setSub('Checking status','We did not get an answer. Checking whether your request went through. Please do not close this window.');
+    for(let i=0;i<5;i++){
+      await sleep(i?4000:2000);
+      try{
+        const c=await rpc('checkSubmission',{submission_id:sid},{retries:0,timeout:30000});
+        if(c.found){const d=strip(await rpc('bootstrap'));d.result={jo_id:c.jo_id,jo_number:c.jo_number,duplicate:true};ui.result=d.result;return d}
+      }catch(e2){if(!(e2 instanceof NetErr))throw e2}
+    }
+    /* Not found yet. Sending again with the same ID is safe: the server returns the original request if it already exists. */
+    setSub('Checking status','Confirming one more time…');
+    try{return strip(await send())}
+    catch(e3){if(!(e3 instanceof NetErr))throw e3;throw new Error('We could not confirm whether your request was received. Your details are kept. Press Submit request to check again. It will not create a duplicate.')}
+  }
+}
+function newJo(){
+  let dr=draftGet();if(!dr||dr.owner!==S.me.email)dr={sid:uid(),owner:S.me.email,v:{},state:'idle'};
+  const restored=Object.keys(dr.v||{}).length>0,v0=dr.v||{},P=picker('Reference files (optional)');let created=null;
+  dialog({title:'New request',desc:restored?'We kept the details of your last attempt. Submitting again will not create a duplicate.':'Describe the work you need. A manager reviews it and assigns a developer.',label:'Submit request',busy:'Submitting…',
+    fields:[{k:'title',l:'Title',req:1,max:140,v:v0.title},{k:'service_type',l:'Service type',t:'select',o:S.lists.service_types,v:v0.service_type},{k:'description',l:'Details',t:'area',rows:4,max:4000,hint:'What do you need, and why?',v:v0.description},{k:'priority',l:'Priority',t:'select',o:S.lists.priorities,v:v0.priority||'Medium'},{k:'target_date',l:'Target date',t:'date',min:todayStr(),v:v0.target_date}],
+    html:'<div class="subst" id="subst" role="status"></div>',html2:P.html(),
+    validate:()=>P.invalid()?'Remove the files marked with an error, then submit again.':'',
+    onSubmit:async v=>{
+      if(!created){
+        dr.v=v;dr.state='submitting';draftSet(dr);setSub('Submitting','Sending your request…');
+        let d;
+        try{d=await submitJo(v,dr.sid)}
+        catch(e){
+          setSub('');const m=msgOf(e);
+          if(m.indexOf('ACCESS:')>=0){showLogin(m.split('ACCESS:')[1]);return m}
+          if(!(e instanceof NetErr)&&m.indexOf('could not confirm')<0){dr.state='failed'}   /* a definite error: the form stays open with its data */
+          draftSet(dr.state==='failed'?null:dr);return m;
+        }
+        draftSet(null);S=d;created=ui.result;render();afterWrite();
+        toast('Request '+created.jo_number+' submitted');
+        const fields=document.querySelectorAll('#df .dfs input:not([type=file]),#df .dfs select,#df .dfs textarea');fields.forEach(x=>x.disabled=true);P.lock();
+      }
+      if(P.todo().length){
+        setSub('Uploading','Attaching your files to '+created.jo_number+'…');
+        let failed;try{failed=await uploadAll(P,{jo_id:created.jo_id})}catch(e){setSub('');showLogin(msgOf(e).split('ACCESS:')[1]||'');return msgOf(e)}
+        afterWrite();
+        if(failed.length){
+          setSub('Failed','Request '+created.jo_number+' was created, but some files did not upload.');
+          const ok=$('#dok');if(ok){ok.dataset.l='Retry failed uploads'}const x=$('#dx');if(x)x.textContent='Close';
+          return created.jo_number+' was created, but '+failed.length+' file'+(failed.length>1?'s':'')+' did not upload: '+failed.join(', ')+'. Retry, or close and add them later from the request.';
+        }
+      }
+      setSub('');return null;
+    },after:d=>{P.mount();if(restored)setSub('')}});
+}
 const approveJo=j=>dialog({title:'Approve and assign',desc:`${j.jo_number}: ${j.title}`,label:'Approve and assign',
   fields:[{k:'developer',l:'Assign to developer',t:'select',o:devGroups(null),ph:'Choose a developer',req:1,hint:'The developer will see this job order and can add tasks for their team.'},{k:'note',l:'Note for the requestor',t:'area',max:500,hint:'Optional'}],
   onSubmit:v=>act('reviewJO',{jo_id:j.jo_id,decision:'approve',developer:v.developer,note:v.note},'Approved and assigned',1)});
@@ -441,16 +629,60 @@ function addTask(j){
     fields:[{k:'task_name',l:'Task',req:1,max:140},{k:'task_type',l:'Type',t:'select',o:S.lists.task_types},
       {k:'assigned_to',l:'Assign to',t:'select',o:devGroups(team,0),ph:'Choose a developer',req:1,hint:hasMine?'Your team is listed first.':'No developers in this team yet, so everyone is listed.'},
       ...(hasMine?[{k:'others',l:'Also show developers from other teams',t:'check'}]:[]),
-      {k:'due_date',l:'Due date',t:'date',min:todayStr()},{k:'priority',l:'Priority',t:'select',o:S.lists.priorities,v:j.priority},{k:'description',l:'Details',t:'area',max:1000,hint:'Optional'}],
+      {k:'due_date',l:'Due date',t:'date',min:todayStr()},{k:'priority',l:'Priority',t:'select',o:S.lists.priorities,v:j.priority},{k:'description',l:'Task description',t:'area',rows:4,max:20000,hint:'Optional. Requirements, activities, findings, issues and expected deliverables. Line breaks are kept.'}],
     onSubmit:v=>act('createTask',{jo_id:j.jo_id,task_name:v.task_name,task_type:v.task_type,assigned_to:v.assigned_to,due_date:v.due_date,priority:v.priority,description:v.description},'Task added',1),
     after:d=>{const c=$('#f_others');if(c)c.onchange=()=>upd(d)}});
 }
 function updTask(t){
-  const j=jobOf(t.jo_id),mg=canManage(j),team=j.developer_team||S.me.team_id;
-  dialog({title:'Update progress',desc:t.task_name,label:'Save progress',
-    fields:[{k:'progress',l:'Progress',t:'progress',v:t.progress,hint:'0% is Pending, 1 to 99% is In progress, 100% is Completed.'},{k:'remark',l:'Remark',t:'area',max:500,hint:'Optional. Shared on the job order timeline.'},
-      ...(mg?[{k:'assigned_to',l:'Assigned to',t:'select',o:devGroups(team,1,t.assigned_to),v:t.assigned_to}]:[])],
-    onSubmit:v=>act('updateTask',{task_id:t.task_id,progress:+v.progress,remark:v.remark,assigned_to:v.assigned_to||t.assigned_to},+v.progress>=100?'Task completed':'Progress saved',1),after:wireProgress});
+  const j=jobOf(t.jo_id),mg=canManage(j),team=j.developer_team||S.me.team_id,rid=uid(),P=picker('Supporting files (optional)');let reported=false;
+  dialog({title:'Update progress',desc:t.task_name,label:'Save progress',busy:'Saving…',
+    fields:[{k:'progress',l:'Completion',t:'pct',v:t.progress,hint:'Whole number from 0 to 100. 0% is Pending, 1 to 99% is In progress, 100% is Completed.'},
+      {k:'remark',l:'Progress report',t:'area',rows:3,max:20000,hint:'Optional. What was done, findings, issues. Shared on the job order timeline with line breaks kept.'},
+      ...(mg?[{k:'description',l:'Task description',t:'area',rows:3,max:20000,v:t.description,hint:'You can edit the task description.'},{k:'assigned_to',l:'Assigned to',t:'select',o:devGroups(team,1,t.assigned_to),v:t.assigned_to}]:[])],
+    html:'<div class="subst" id="subst" role="status"></div>',html2:P.html(),
+    validate:v=>(!/^\d{1,3}$/.test(String(v.progress).trim())||+v.progress>100)?'Enter a whole number from 0 to 100.':(P.invalid()?'Remove the files marked with an error, then save again.':''),
+    onSubmit:async v=>{
+      if(!reported){
+        setSub('Saving','Saving your progress report…');
+        const arg={task_id:t.task_id,progress:String(v.progress).trim(),remark:v.remark,assigned_to:v.assigned_to||t.assigned_to,report_id:rid};
+        if(mg)arg.description=v.description;
+        let d;
+        try{
+          try{d=strip(await rpc('updateTask',arg,{timeout:60000}))}
+          catch(e){if(!(e instanceof NetErr))throw e;setSub('Checking status','We did not get an answer. Trying again safely…');await sleep(2000);d=strip(await rpc('updateTask',arg,{timeout:60000}))}   /* the report ID makes a repeat harmless */
+        }catch(e){
+          setSub('');const m=msgOf(e);
+          if(m.indexOf('ACCESS:')>=0){showLogin(m.split('ACCESS:')[1]);return m}
+          return e instanceof NetErr?'We could not confirm that your report was saved. Press Save progress again. It will not be recorded twice.':m;
+        }
+        S=d;reported=true;render();afterWrite();toast(+v.progress>=100?'Task completed':'Progress saved');
+        document.querySelectorAll('#df .dfs input:not([type=file]),#df .dfs select,#df .dfs textarea').forEach(x=>x.disabled=true);P.lock();
+      }
+      if(P.todo().length){
+        setSub('Uploading','Attaching your files to this report…');
+        let failed;try{failed=await uploadAll(P,{jo_id:t.jo_id,task_id:t.task_id,report_id:rid})}catch(e){setSub('');showLogin(msgOf(e).split('ACCESS:')[1]||'');return msgOf(e)}
+        afterWrite();
+        if(failed.length){
+          setSub('Failed','Your progress was saved, but some files did not upload.');
+          const ok=$('#dok');if(ok)ok.dataset.l='Retry failed uploads';const x=$('#dx');if(x)x.textContent='Close';
+          return 'Progress was saved, but '+failed.length+' file'+(failed.length>1?'s':'')+' did not upload: '+failed.join(', ')+'.';
+        }
+      }
+      setSub('');return null;
+    },after:d=>{wireProgress();P.mount()}});
+}
+/* Add files to a request after it was submitted. */
+function addFiles(j){
+  const P=picker('Files');
+  dialog({title:'Add files',desc:`${j.jo_number}: ${j.title}`,label:'Upload files',busy:'Uploading…',fields:[],html:'<div class="subst" id="subst" role="status"></div>',html2:P.html(),
+    validate:()=>P.invalid()?'Remove the files marked with an error first.':(P.todo().length?'':'Choose at least one file.'),
+    onSubmit:async()=>{
+      setSub('Uploading','Attaching your files…');
+      let failed;try{failed=await uploadAll(P,{jo_id:j.jo_id})}catch(e){setSub('');showLogin(msgOf(e).split('ACCESS:')[1]||'');return msgOf(e)}
+      afterWrite();
+      if(failed.length){setSub('Failed','Some files did not upload.');const ok=$('#dok');if(ok)ok.dataset.l='Retry failed uploads';return failed.length+' file'+(failed.length>1?'s':'')+' did not upload: '+failed.join(', ')+'.'}
+      setSub('');toast('Files added');return null;
+    },after:()=>P.mount()});
 }
 function userForm(u){
   u=u||{};const edit=!!u.email;
@@ -570,9 +802,12 @@ function drawer(){
     staff()&&j.status==='Completed'?`<button class="btn" data-a="closejo" data-id="${j.jo_id}">Close job order</button>`:'',
     (staff()||(j.requested_by===me.email&&j.status==='Submitted'))&&['Closed','Cancelled','Rejected'].indexOf(j.status)<0?`<button class="btn ghost" data-a="cancel" data-id="${j.jo_id}">Cancel request</button>`:''
   ].join('');
+  const D=ui.detail[j.jo_id];if(!D&&!ui.dl[j.jo_id])loadDetail(j.jo_id);
+  const fchip=f=>`<button class="btn sm ghost" data-a="dl" data-id="${esc(f.attachment_id)}" title="${esc(f.file_name)} (${sz(f.size)})">${ic('clip',14)}<span style="overflow:hidden;text-overflow:ellipsis">${esc(f.file_name)}</span></button>`;
+  const jfiles=D?D.files.filter(f=>!f.task_id):[],canAdd=(j.requested_by===me.email||mg)&&['Closed','Cancelled','Rejected'].indexOf(j.status)<0;
   const items=[];
-  S.history.filter(h=>h.jo_id===j.jo_id).forEach(h=>items.push({t:h.changed_at,h:`<b>${esc(nm(h.changed_by))}</b> ${h.from_status===h.to_status?esc(h.note||'updated the request'):h.from_status?'moved this to '+esc(slabel(h.to_status)):'submitted the request'}${h.from_status!==h.to_status&&h.note?`<small>${esc(h.note)}</small>`:''}`}));
-  S.updates.filter(u=>u.jo_id===j.jo_id).forEach(u=>{const t=T.find(x=>x.task_id===u.task_id)||{};items.push({t:u.updated_at,h:`<b>${esc(nm(u.updated_by))}</b> set ${esc(t.task_name||'a task')} to ${u.progress}%${u.remark?`<small>${esc(u.remark)}</small>`:''}`})});
+  (D?D.history:[]).filter(h=>h.jo_id===j.jo_id).forEach(h=>items.push({t:h.changed_at,h:`<b>${esc(nm(h.changed_by))}</b> ${h.from_status===h.to_status?esc(h.note||'updated the request'):h.from_status?'moved this to '+esc(slabel(h.to_status)):'submitted the request'}${h.from_status!==h.to_status&&h.note?`<small>${esc(h.note)}</small>`:''}`}));
+  (D?D.updates:[]).filter(u=>u.jo_id===j.jo_id).forEach(u=>{const t=T.find(x=>x.task_id===u.task_id)||{},fl=D.files.filter(f=>f.report_id===u.id);items.push({t:u.updated_at,h:`<b>${esc(nm(u.updated_by))}</b> set ${esc(t.task_name||'a task')} ${u.prev_progress!==''&&u.prev_progress!==undefined?'from '+esc(u.prev_progress)+'% to ':'to '}<b>${esc(u.progress)}%</b>${u.remark?`<small class="rtext">${esc(u.remark)}</small>`:''}${fl.length?`<div class="fchips">${fl.map(fchip).join('')}</div>`:''}`})});
   items.sort((a,b)=>String(b.t).localeCompare(String(a.t)));
   const scrollTop=el.scrollTop;
   el.innerHTML=`<div class="dr-h"><b>${esc(j.jo_number)}</b>${chip(j.status)}<span class="sp"></span><button class="ib" data-a="close" aria-label="Close details">${ic('x')}</button></div>
@@ -583,8 +818,9 @@ function drawer(){
   <div><span>Team</span><b>${esc(tm(j.developer_team))}</b></div><div><span>Review time</span><b>${dur(gap(j.requested_at,j.reviewed_at))}</b></div><div><span>Execution time</span><b>${dur(gap(j.work_started_at,j.completed_at))}</b></div><div><span>Total turnaround</span><b>${j.closed_at?dur(gap(j.requested_at,j.closed_at)):'Open'}</b></div></div>
   <div><div style="display:flex;justify-content:space-between;margin-bottom:6px"><b>Progress</b><span style="color:var(--mut)">${T.length?'Average of '+T.length+' task'+(T.length===1?'':'s'):'Starts when tasks are added'}</span></div>${pbar(j.progress)}</div>
   ${acts?`<div class="dacts">${acts}</div>`:''}
-  ${(active||T.length)?`<div class="sec" style="margin:0"><header><h2>Tasks</h2><span class="sp"></span>${mg&&active?`<button class="btn sm" data-a="addtask" data-id="${j.jo_id}">${ic('plus',14)}Add task</button>`:''}</header>${T.map(t=>`<div class="tk">${av(t.assigned_to)}<div class="tm"><b>${esc(t.task_name)}</b><span class="sub"><span>${esc(t.task_type)}</span><span>${esc(nm(t.assigned_to))}</span>${t.due_date?`<span class="${taskOver(t)?'over':''}">Due ${fd(t.due_date)}</span>`:''}</span></div>${chip(t.status)}${pbar(t.progress)}${active&&(mg||t.assigned_to===me.email)?`<button class="btn sm ghost" data-a="updtask" data-id="${t.task_id}">Update</button>`:''}</div>`).join('')||empty('No tasks yet',mg?'Break this job order into tasks and give them to developers.':'The assigned developer adds tasks.')}</div>`:''}
-  <div class="sec" style="margin:0"><header><h2>Activity</h2></header>${items.length?`<ul class="tl">${items.slice(0,30).map(i=>`<li>${i.h}<small>${fdt(i.t)}</small></li>`).join('')}</ul>`:empty('No activity yet')}</div></div>`;
+  ${(active||T.length)?`<div class="sec" style="margin:0"><header><h2>Tasks</h2><span class="sp"></span>${mg&&active?`<button class="btn sm" data-a="addtask" data-id="${j.jo_id}">${ic('plus',14)}Add task</button>`:''}</header>${T.map(t=>`<div class="tk">${av(t.assigned_to)}<div class="tm"><b>${esc(t.task_name)}</b><span class="sub"><span>${esc(t.task_type)}</span><span>${esc(nm(t.assigned_to))}</span>${t.due_date?`<span class="${taskOver(t)?'over':''}">Due ${fd(t.due_date)}</span>`:''}</span>${t.description?`<details class="tdd"><summary>Task description</summary><div class="td">${esc(t.description)}</div></details>`:''}${D&&D.files.some(f=>f.task_id===t.task_id)?`<div class="fchips" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">${D.files.filter(f=>f.task_id===t.task_id).map(fchip).join('')}</div>`:''}</div>${chip(t.status)}<b class="pct">${t.progress}%</b>${pbar(t.progress)}${active&&(mg||t.assigned_to===me.email)?`<button class="btn sm ghost" data-a="updtask" data-id="${t.task_id}">Update</button>`:''}</div>`).join('')||empty('No tasks yet',mg?'Break this job order into tasks and give them to developers.':'The assigned developer adds tasks.')}</div>`:''}
+  <div class="sec" style="margin:0"><header><h2>Reference files</h2><span class="sp"></span>${canAdd?`<button class="btn sm" data-a="addfiles" data-id="${j.jo_id}">${ic('plus',14)}Add files</button>`:''}</header>${!D?'<div class="sk"></div>':jfiles.length?jfiles.map(f=>`<div class="fr">${ic('clip',18)}<div class="fn"><b title="${esc(f.file_name)}">${esc(f.file_name)}</b><small>${sz(f.size)} · ${esc(nm(f.uploaded_by))} · ${fdt(f.uploaded_at)}</small></div><button class="btn sm ghost" data-a="dl" data-id="${esc(f.attachment_id)}">Download</button></div>`).join(''):empty('No files attached')}</div>
+  <div class="sec" style="margin:0"><header><h2>Activity</h2></header>${!D?'<div class="sk"></div><div class="sk"></div>':D.error?`<div style="padding:14px 18px">${esc(D.error)} <button class="btn sm ghost" data-a="reloaddetail" data-id="${j.jo_id}">Try again</button></div>`:items.length?`<ul class="tl">${items.slice(0,30).map(i=>`<li>${i.h}<small>${fdt(i.t)}</small></li>`).join('')}</ul>`:empty('No activity yet')}</div></div>`;
   document.body.classList.add('dopen');el.scrollTop=scrollTop;
 }
 
@@ -614,6 +850,17 @@ function render(){
 const H={
   nav:el=>{ui.page=el.dataset.p;ui.jo=null;ui.q='';if(ui.page==='log')loadLog();else render();scrollTo(0,0)},
   open:el=>{ui.jo=el.dataset.id;drawer()},
+  addfiles:el=>addFiles(jobOf(el.dataset.id)),
+  reloaddetail:el=>{delete ui.detail[el.dataset.id];drawer()},
+  dl:async el=>{
+    if(el.disabled)return;el.disabled=true;const old=el.innerHTML;el.textContent='Preparing…';
+    try{
+      const f=await rpc('downloadFile',{attachment_id:el.dataset.id},{timeout:120000}),bin=atob(f.data),arr=new Uint8Array(bin.length);
+      for(let i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);
+      const url=URL.createObjectURL(new Blob([arr],{type:f.mime})),a=document.createElement('a');a.href=url;a.download=f.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
+    }catch(e){const m=msgOf(e);if(m.indexOf('ACCESS:')>=0)showLogin(m.split('ACCESS:')[1]);else toast(m,'err')}
+    finally{el.disabled=false;el.innerHTML=old}
+  },
   close:()=>{ui.jo=null;drawer()},
   newjo:()=>newJo(),
   view:el=>{ui.view=el.dataset.v;render()},
@@ -621,7 +868,7 @@ const H={
   refresh:async()=>{const e=await act('bootstrap',null,'Up to date',1);if(e&&e.indexOf('ACCESS:')<0)toast(e,'err');if(ui.page==='log')loadLog()},
   signout:()=>doSignOut(),
   account:()=>dialog({title:'Your account',cancel:'Close',label:'Sign out',danger:1,
-    html:`<div style="display:flex;align-items:center;gap:14px;padding:16px 22px 4px">${av(S.me.email,'lg')}<div style="min-width:0"><b style="display:block">${esc(S.me.name)}</b><span style="color:var(--mut);word-break:break-all">${esc(S.me.email)}</span><div style="margin-top:6px"><span class="chip c-prog"><i></i>${esc(S.me.role)}</span></div></div></div><p class="dd" style="padding-top:14px">To use another Google account, sign out and choose it on the sign-in screen.</p>`,
+    html:`<div style="display:flex;align-items:center;gap:14px;padding:16px 22px 4px">${av(S.me.email,'lg')}<div style="min-width:0"><b style="display:block">${esc(S.me.name)}</b><span style="color:var(--mut);word-break:break-all">${esc(S.me.email)}</span><div style="margin-top:6px"><span class="chip c-prog"><i></i>${esc(S.me.role)}</span></div></div></div><p class="dd" style="padding-top:14px">To use another Google account, sign out and choose it on the sign-in screen.</p>${ui.perf?`<p class="dd" style="padding-top:0;font-size:12.5px">Last request: ${esc(ui.perf.fn)} took ${ui.perf.total} ms (server ${ui.perf.server} ms).</p>`:''}`,
     onSubmit:()=>{doSignOut();return null}}),
   approve:el=>approveJo(jobOf(el.dataset.id)),reject:el=>rejectJo(jobOf(el.dataset.id)),assign:el=>assignJo(jobOf(el.dataset.id)),
   cancel:el=>cancelJo(jobOf(el.dataset.id)),closejo:el=>closeJo(jobOf(el.dataset.id)),addtask:el=>addTask(jobOf(el.dataset.id)),
@@ -629,7 +876,7 @@ const H={
   adduser:()=>userForm(),edituser:el=>userForm(S.users.find(u=>u.email===el.dataset.id)),
   addteam:()=>teamForm(),editteam:el=>teamForm(S.teams.find(t=>t.team_id===el.dataset.id))
 };
-document.addEventListener('click',e=>{const el=e.target.closest('[data-a]');if(el&&el.tagName==='A'&&el.getAttribute('href')==='#')e.preventDefault();if(el&&(S||el.dataset.a==='copylink')&&H[el.dataset.a])H[el.dataset.a](el)});
+document.addEventListener('click',e=>{const el=e.target.closest('[data-a]');if(el&&el.tagName==='A'&&el.getAttribute('href')==='#')e.preventDefault();if(el&&S&&H[el.dataset.a])H[el.dataset.a](el)});
 document.addEventListener('keydown',e=>{
   if(e.key==='Enter'||e.key===' '){const el=e.target.closest('[data-a][role=button],tr[data-a]');if(el&&el===e.target&&S){e.preventDefault();H[el.dataset.a](el)}}
   if(e.key==='Escape'&&S&&ui.jo&&!$('#dlg').open){ui.jo=null;drawer()}
@@ -638,33 +885,60 @@ document.addEventListener('input',e=>{if(e.target.id==='q'){ui.q=e.target.value;
 document.addEventListener('change',e=>{if(e.target.id==='pr'){ui.pr=e.target.value;$('#res').innerHTML=results()}});
 
 /* ============ sign-in with Google (the user picks the account every time) ============ */
-let signing=false,idleT=null;
+let signing=false,idleT=null,vctl=null,vslow=null;
 const jwt=t=>{try{return JSON.parse(decodeURIComponent(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')).split('').map(c=>'%'+('00'+c.charCodeAt(0).toString(16)).slice(-2)).join('')))}catch(e){return {}}};
 function showLogin(err,out){
-  S=null;ui.jo=null;ui.log=null;ui.tok=null;document.body.classList.remove('in','dopen');
-  const d=$('#dlg');if(d.open)d.close();
+  S=null;ui.jo=null;ui.log=null;ui.tok=null;ui.exp=0;ui.detail={};ui.dl={};document.body.classList.remove('in','dopen');
+  const d=$('#dlg');if(d.open)d.close();vmHide();signing=false;
   const e=$('#lerr');e.textContent=err||'';e.classList.toggle('on',!!err);
-  const denied=/not authorized|inactive|locked/i.test(err||'');
+  const denied=/not authorized|inactive|locked/i.test(err||''),who=ui.who;
   $('#ltitle').textContent=denied?'Account not authorized':'Sign in';
-  const who=ui.who;
   $('#lmsg').textContent=denied?(who?'The account '+who+' is not authorized to use JOMM. Choose another Google account below, or ask your administrator to add this one.':'The Google account you selected cannot use JOMM. Choose another Google account below.')
     :out?'You have been signed out. Choose any Google account below.':'Choose the Google account you want to use.';
-  $('#lswitch').hidden=!denied;
-  setBusy(false);clearTimeout(idleT);
+  $('#lswitch').hidden=!denied;$('#gbtn').style.display='';clearTimeout(idleT);
   try{google.accounts.id.disableAutoSelect()}catch(x){}
 }
-function setBusy(b){signing=b;$('#lgo').hidden=!b;$('#gbtn').style.display=b?'none':''}
+/* The verification pop-up appears only while an account is actually being verified. */
+function vmShow(title,desc,acts,isErr){
+  const v=$('#vm');v.classList.toggle('err',!!isErr);$('#vmt').textContent=title;$('#vmd').textContent=desc;
+  $('#vma').innerHTML=(acts||[]).map(a=>`<button class="btn${a.ghost?' ghost':''}" type="button" data-vm="${a.k}">${esc(a.l)}</button>`).join('');
+  v.hidden=false;const b=$('#vma button');if(b)b.focus();
+}
+function vmHide(){const v=$('#vm');if(v)v.hidden=true;clearTimeout(vslow)}
+$('#vm').addEventListener('click',e=>{
+  const b=e.target.closest('[data-vm]');if(!b)return;
+  if(b.dataset.vm==='retry')verify();
+  else{if(vctl)vctl.abort();vmHide();signing=false;showLogin('')}
+});
 async function onCredential(resp){
   if(signing||!resp||!resp.credential)return;
-  ui.tok=resp.credential;ui.who=jwt(resp.credential).email||'';
-  setBusy(true);$('#lerr').classList.remove('on');
-  try{S=await call('login',null);ui.page='dash';document.body.classList.add('in');render();setBusy(false);armIdle()}
-  catch(e){const m=msgOf(e);showLogin(m.indexOf('ACCESS:')>=0?m.split('ACCESS:')[1]:(m||'Sign-in failed. Please try again.'))}
+  ui.tok=resp.credential;const p=jwt(resp.credential);ui.who=p.email||'';ui.exp=p.exp||0;
+  verify();
+}
+async function verify(){
+  if(signing||!ui.tok)return;signing=true;$('#lerr').classList.remove('on');
+  vctl=new AbortController();
+  vmShow('Verifying your Google account…','This only takes a moment.',[{k:'cancel',l:'Cancel',ghost:1}]);
+  vslow=setTimeout(()=>{$('#vmd').textContent='Still working. Google is responding slowly.'},8000);
+  try{
+    const d=await call('login',null,{timeout:25000,retries:1,signal:vctl.signal});
+    S=d;ui.page='dash';signing=false;vmHide();document.body.classList.add('in');render();armIdle();recoverPending();
+  }catch(e){
+    signing=false;clearTimeout(vslow);const m=msgOf(e);
+    if(vctl.signal.aborted)return;
+    if(m.indexOf('ACCESS:')>=0){showLogin(m.split('ACCESS:')[1]);return}
+    if(ui.exp&&Date.now()>ui.exp*1000-10000){showLogin('Your Google sign-in expired. Please sign in again.');return}
+    vmShow('We could not verify your account',m||'Something went wrong. Please try again.',[{k:'retry',l:'Try again'},{k:'cancel',l:'Use another account',ghost:1}],true);
+  }
 }
 function doSignOut(){ui.who='';showLogin('','out')}
+let gis=0;
 function initGoogle(){
   const c=window.JOMM_CONFIG;
-  if(!window.google||!google.accounts){return setTimeout(initGoogle,200)}
+  if(!window.google||!google.accounts){
+    if(++gis>50){const e=$('#lerr');e.textContent='Google sign-in could not load. Check your connection, then reload this page.';e.classList.add('on');return}
+    return setTimeout(initGoogle,200);
+  }
   google.accounts.id.initialize({client_id:c.GOOGLE_CLIENT_ID,callback:onCredential,auto_select:false,cancel_on_tap_outside:true});
   google.accounts.id.renderButton($('#gbtn'),{theme:'outline',size:'large',shape:'pill',text:'continue_with',width:Math.min(300,Math.max(220,($('#gbtn').clientWidth||300)))});
 }
