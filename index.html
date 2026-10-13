@@ -190,20 +190,24 @@ body.dopen #scrim{opacity:1;pointer-events:auto}body.dopen #drawer{transform:non
 .dacts{display:flex;flex-wrap:wrap;gap:8px}
 .tk{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line)}.tk:last-child{border:0}
 
-.tlist{list-style:none;margin:0;padding:6px 8px 8px}
-.tr{display:grid;grid-template-columns:34px minmax(0,1fr) auto auto;grid-template-areas:"o n s a" "o m m a" "o d d d";align-items:center;column-gap:10px;row-gap:3px;padding:9px 10px;border-radius:10px;border-bottom:1px solid var(--line)}
+.tlist{list-style:none;margin:0;padding:4px 8px 6px}
+.tr{display:grid;grid-template-columns:30px minmax(0,1fr) auto auto;grid-template-areas:"o n p a" "o m p a" "o d d d";align-items:center;column-gap:10px;row-gap:1px;padding:6px 8px;border-radius:10px;border-bottom:1px solid var(--line)}
 .tr:last-child{border-bottom:0}.tr:hover{background:color-mix(in srgb,var(--brand) 4%,transparent)}.tr.cx{opacity:.7}.tr.cx .tr-n b{text-decoration:line-through}
-.tr-o{grid-area:o;display:flex;flex-direction:column;align-items:center;gap:0}.tr-o .no{font-size:12px;font-weight:700;color:var(--mut);line-height:1.2;min-width:20px;text-align:center}
-.mv{width:26px;height:20px;border:0;background:transparent;color:var(--mut);border-radius:6px;display:grid;place-items:center;cursor:pointer;padding:0}.mv:hover:not(:disabled){background:var(--surface2);color:var(--brand)}.mv:disabled{opacity:.25;cursor:default}.mv:focus-visible{outline:2px solid var(--brand)}
-.tr-n{grid-area:n;display:flex;align-items:center;gap:8px;min-width:0}.tr-n b{font-weight:600;font-size:14px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.tr-ty{flex:none;font-size:11.5px;font-weight:600;color:var(--closed);background:color-mix(in srgb,var(--closed) 14%,transparent);border-radius:999px;padding:1px 9px;white-space:nowrap;max-width:45%;overflow:hidden;text-overflow:ellipsis}
-.tr-s{grid-area:s}.tr-a{grid-area:a;display:flex;gap:6px}
-.tr-m{grid-area:m;display:flex;align-items:center;gap:6px 14px;flex-wrap:wrap;font-size:12.5px;color:var(--mut);min-width:0}
-.tr-m .who,.tr-m .due{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}.tr-m .who .av{width:20px;height:20px;font-size:9px}.tr-m .due.over{color:var(--bad);font-weight:600}
-.tr-p{display:inline-flex;min-width:130px;flex:0 1 190px}.tr-p .pw{width:100%}.tr-p .pw b{font-size:12px}
-.tr-x{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
-.tr-d{grid-area:d;min-width:0}.tr-d .tdd summary{font-size:12.5px}
-@media(max-width:620px){.tr{grid-template-columns:30px minmax(0,1fr) auto;grid-template-areas:"o n s" "o m m" "o a a" "o d d"}.tr-a{justify-content:flex-start;margin-top:4px}.tr-p{flex:1 1 140px}}
+.tr-o{grid-area:o;display:flex;flex-direction:column;align-items:center;gap:0}.tr-o .no{font-size:11.5px;font-weight:700;color:var(--mut);line-height:1.1;min-width:20px;text-align:center}
+.mv{width:26px;height:14px;border:0;background:transparent;color:var(--mut);border-radius:5px;display:grid;place-items:center;cursor:pointer;padding:0}.mv svg{width:12px;height:12px}.mv:hover:not(:disabled){background:var(--surface2);color:var(--brand)}.mv:disabled{opacity:.25;cursor:default}.mv:focus-visible{outline:2px solid var(--brand)}
+.tr-n{grid-area:n;display:flex;align-items:center;gap:8px;min-width:0}.tr-n b{font-weight:600;font-size:13.5px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tr-ty{flex:none;font-size:11px;font-weight:600;color:var(--closed);background:color-mix(in srgb,var(--closed) 14%,transparent);border-radius:999px;padding:0 8px;white-space:nowrap;max-width:45%;overflow:hidden;text-overflow:ellipsis}
+.tr-a{grid-area:a;display:flex;gap:6px}.tr-a .btn.sm{padding:5px 10px;font-size:12.5px;min-height:0}
+.tr-m{grid-area:m;display:flex;align-items:center;gap:2px 12px;flex-wrap:wrap;font-size:12px;color:var(--mut);min-width:0}
+.tr-m .chip{font-size:11px;padding:1px 8px}
+.tr-m .who,.tr-m .due{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}.tr-m .who .av{width:18px;height:18px;font-size:8.5px}.tr-m .due.over{color:var(--bad);font-weight:600}
+.tr-m .tdd summary{margin:0;font-size:12px}.tr-m .tdd[open]{flex-basis:100%;padding:2px 0 4px}.tr-m .tdd .td{margin-top:4px}
+.tr-x{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:260px}
+.tr-p{grid-area:p;display:grid;place-items:center}
+.dn{position:relative;width:38px;height:38px;display:grid;place-items:center}.dn svg{position:absolute;inset:0}.dn b{position:relative;font-size:10.5px;font-weight:700;color:var(--ink)}.dn.none{color:var(--mut)}
+.dn-t,.dn-v{fill:none;stroke-width:4.5}.dn-t{stroke:var(--line2)}.dn-v{stroke-linecap:round;stroke:var(--pen)}.dn-v.c-prog{stroke:var(--prog)}.dn-v.c-done{stroke:var(--done)}.dn-v.c-pen{stroke:var(--pen)}
+.tr-d{grid-area:d;min-width:0;padding:2px 0 2px}
+@media(max-width:620px){.tr{grid-template-columns:28px minmax(0,1fr) auto;grid-template-areas:"o n p" "o m p" "o a a" "o d d"}.tr-a{justify-content:flex-start;margin-top:3px}}
 .tcards{display:grid;grid-template-columns:1fr;gap:10px;padding:14px 16px}
 .tc{border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0;box-shadow:inset 3px 0 0 var(--closed)}
 .tc.cx{opacity:.75}.tc-h{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.tc-n{font-weight:600;font-size:15px;min-width:0;overflow-wrap:anywhere}
@@ -804,7 +808,7 @@ function dash(){
   const act_=J.filter(j=>j.status==='Pending'||j.status==='In Progress'),over=J.filter(isOver);
   const cl=J.filter(j=>j.status==='Closed'&&j.tat!==''&&!isNaN(Number(j.tat)));
   const av_=cl.length?cl.reduce((a,j)=>a+Number(j.tat),0)/cl.length:NaN,avg=isNaN(av_)?'–':av_<1?'<1 day':av_.toFixed(1)+' days';
-  const stages=['Submitted','Pending','In Progress','Completed','Closed'],tot=stages.reduce((a,s)=>a+cnt(s),0);
+  const stages=['Submitted','Pending','In Progress','Completed','Closed','Rejected','Cancelled'],tot=stages.reduce((a,s)=>a+cnt(s),0);
   const strip=`<section class="strip"><h2>Where job orders stand</h2><div class="sbar">${tot?stages.filter(s=>cnt(s)).map(s=>`<button class="sgm c-${scls(s)}" style="flex:${cnt(s)};--c:var(--${scls(s)==='sub'?'sub':scls(s)})" data-a="filter" data-s="${s}" aria-label="${esc(slabel(s))}: ${cnt(s)}" title="${esc(slabel(s))}: ${cnt(s)}"></button>`).join(''):'<div class="sgm empty" style="flex:1"></div>'}</div><div class="slg">${stages.map(s=>`<button class="c-${scls(s)}" data-a="filter" data-s="${s}"><i></i>${esc(slabel(s))} <b>${cnt(s)}</b></button>`).join('')}</div></section>`;
   const kp=(n,l,c)=>`<div class="${c||''}"><b>${n}</b><span>${l}</span></div>`;
   const kpis=`<section class="kpis" aria-label="Key numbers">${kp(J.length,'Total job orders')}${kp(act_.length,'Active')}${kp(cnt('Completed')+cnt('Closed'),'Completed')}${kp(over.length,'Overdue',over.length?'bad':'')}${kp(avg,'Average turnaround')}${kp(cnt('Cancelled'),'Cancelled')}</section>`;
@@ -874,6 +878,7 @@ async function loadLog(){
 
 /* ============ drawer ============ */
 const MV_UP='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg>',MV_DN='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
+const donut=p=>{p=Math.max(0,Math.min(100,+p||0));const r=14,c=2*Math.PI*r,k=p>=100?'done':p>0?'prog':'pen';return `<span class="dn" role="img" aria-label="${p}% complete" title="${p}% complete"><svg width="38" height="38" viewBox="0 0 38 38" aria-hidden="true"><circle cx="19" cy="19" r="${r}" class="dn-t"/><circle cx="19" cy="19" r="${r}" class="dn-v c-${k}" stroke-dasharray="${(c*p/100).toFixed(2)} ${c.toFixed(2)}" transform="rotate(-90 19 19)"/></svg><b>${p}</b></span>`};
 /* Tasks of a job order in their working order. A task with no saved position keeps its place in the sheet. */
 function taskOrder(joId){return S.tasks.filter(t=>t.jo_id===joId).map((t,i)=>({t,k:t.sort_order!==''&&t.sort_order!=null&&!isNaN(Number(t.sort_order))?Number(t.sort_order):i+1,i})).sort((a,b)=>(a.k-b.k)||(a.i-b.i)).map(x=>x.t)}
 function drawer(){
@@ -908,10 +913,10 @@ function drawer(){
     const ty=t.task_type==='Others'&&t.task_type_other?'Others: '+t.task_type_other:t.task_type;
     return `<li class="tr${cx?' cx':''}"><div class="tr-o">${mv?`<button type="button" class="mv" data-a="mvtask" data-id="${t.task_id}" data-d="-1" aria-label="Move ${esc(t.task_name)} up" title="Move up"${lp===0?' disabled':''}>${MV_UP}</button><span class="no">${ix+1}</span><button type="button" class="mv" data-a="mvtask" data-id="${t.task_id}" data-d="1" aria-label="Move ${esc(t.task_name)} down" title="Move down"${lp===live.length-1?' disabled':''}>${MV_DN}</button>`:`<span class="no">${ix+1}</span>`}</div>
     <div class="tr-n"><b title="${esc(t.task_name)}">${esc(t.task_name)}</b><span class="tr-ty">${esc(ty)}</span></div>
-    <div class="tr-s">${chip(t.status)}</div>
-    <div class="tr-m"><span class="who">${av(t.assigned_to)}${esc(nm(t.assigned_to))}</span><span class="due${taskOver(t)?' over':''}">${ic('clock',13)}${t.due_date?fd(t.due_date):'No due date'}</span>${cx?(t.cancel_reason?`<span class="tr-x" title="${esc(t.cancel_reason)}">Cancelled: ${esc(t.cancel_reason)}</span>`:''):`<span class="tr-p">${pbar(t.progress)}</span>`}</div>
+    <div class="tr-m">${chip(t.status)}<span class="who">${av(t.assigned_to)}${esc(nm(t.assigned_to))}</span><span class="due${taskOver(t)?' over':''}">${ic('clock',13)}${t.due_date?fd(t.due_date):'No due date'}</span>${cx&&t.cancel_reason?`<span class="tr-x" title="${esc(t.cancel_reason)}">${esc(t.cancel_reason)}</span>`:''}${t.description?`<details class="tdd"><summary>Details</summary><div class="td">${esc(t.description)}</div></details>`:''}</div>
+    <div class="tr-p">${cx?'<span class="dn none" title="Cancelled">–</span>':donut(t.progress)}</div>
     ${can||(active&&mg)?`<div class="tr-a">${can?`<button class="btn sm ghost" data-a="updtask" data-id="${t.task_id}">Update</button>`:''}${active&&mg?(cx?`<button class="btn sm ghost" data-a="reinstate" data-id="${t.task_id}">Reinstate</button>`:`<button class="btn sm ghost" data-a="canceltask" data-id="${t.task_id}">Cancel</button>`):''}</div>`:''}
-    ${t.description||tf.length?`<div class="tr-d">${t.description?`<details class="tdd"><summary>Task description</summary><div class="td">${esc(t.description)}</div></details>`:''}${tf.length?`<div class="fchips">${tf.map(fchip).join('')}</div>`:''}</div>`:''}</li>`}).join('')}</ul>`:empty('No tasks yet',mg?'Break this job order into tasks and give them to developers.':'The assigned developer adds tasks.')}</div>`:''}
+    ${tf.length?`<div class="tr-d"><div class="fchips">${tf.map(fchip).join('')}</div></div>`:''}</li>`}).join('')}</ul>`:empty('No tasks yet',mg?'Break this job order into tasks and give them to developers.':'The assigned developer adds tasks.')}</div>`:''}
   <div class="sec" style="margin:0"><header><h2>Reference files</h2><span class="sp"></span>${canAdd?`<button class="btn sm" data-a="addfiles" data-id="${j.jo_id}">${ic('plus',14)}Add files</button>`:''}</header>${!D?'<div class="sk"></div>':jfiles.length?jfiles.map(f=>`<div class="fr">${ic('clip',18)}<div class="fn"><b title="${esc(f.file_name)}">${esc(f.file_name)}</b><small>${sz(f.size)} · ${esc(nm(f.uploaded_by))} · ${fdt(f.uploaded_at)}</small></div><button class="btn sm ghost" data-a="dl" data-id="${esc(f.attachment_id)}">Download</button></div>`).join(''):empty('No files attached')}</div>
   <div class="sec" style="margin:0"><header><h2>Activity</h2></header>${!D?'<div class="sk"></div><div class="sk"></div>':D.error?`<div style="padding:14px 18px">${esc(D.error)} <button class="btn sm ghost" data-a="reloaddetail" data-id="${j.jo_id}">Try again</button></div>`:items.length?`<ul class="tl">${items.slice(0,30).map(i=>`<li>${i.h}<small>${fdt(i.t)}</small></li>`).join('')}</ul>`:empty('No activity yet')}</div></div>`;
   document.body.classList.add('dopen');el.scrollTop=scrollTop;gtMountAll(el);
@@ -1031,13 +1036,13 @@ function gtBody(){
   const opt=i=>`<option value="${i.j.jo_id}"${i===cur?' selected':''}>${esc(i.j.jo_number)}: ${esc(i.j.title)} (${esc(i.j.status.toLowerCase())})</option>`;
   const pick=`<div class="gtb"><div class="fld" style="margin:0;flex:1;min-width:220px;max-width:520px"><label for="gtsel">Job order${filtered?` (${items.length} of ${all.length} shown)`:''}</label><select id="gtsel"><option value=""${cur?'':' selected'}>All job orders (${items.length})</option>${items.map(opt).join('')}</select></div></div>`;
   if(!cur){
-    const st=gtStats({today:m.today,items}),pl=(n,w)=>n+' '+w+(n===1?'':'s');
+    const allOpen=items.filter(i=>i.tasks.length).every(i=>gtIsOpen(i.j.jo_id)),st=gtStats({today:m.today,items}),pl=(n,w)=>n+' '+w+(n===1?'':'s');
     const tiles=`<div class="gtiles">
     <div class="gtl ${st.overJ?'bad':''}"><b>${st.overJ}</b><span>Job orders overdue now</span><small>${pl(st.soonJ,'job order')} due in the next 7 days</small></div>
     <div class="gtl ${st.finJ&&st.onJ==='100%'?'ok':''}"><b>${st.onJ}</b><span>Finished on time</span><small>${st.finJ?'Of '+pl(st.finJ,'finished job order')+' with a target date':'No finished job order with a target date yet'}</small></div>
     <div class="gtl"><b>${st.onT}</b><span>Tasks finished on time</span><small>Against each task's due date</small></div>
     <div class="gtl ${st.overT?'bad':''}"><b>${st.overT}</b><span>Tasks overdue now</span><small>Across ${pl(items.length,'job order')}</small></div></div>`;
-    return pick+tiles+gtLegend+`<div class="gthint">Select a job order or task row to see its details.<span class="sp"></span><button class="btn sm ghost" type="button" data-a="gtxa" data-v="1">Expand all</button><button class="btn sm ghost" type="button" data-a="gtxa" data-v="0">Collapse all</button></div>`+items.map(i=>`<div class="gtone">${gtChart(i,m,'p'+i.j.jo_id,true)}</div>`).join('');
+    return pick+tiles+gtLegend+`<div class="gthint">Select a job order or task row to see its details.<span class="sp"></span><button class="btn sm ghost" type="button" data-a="gtxa" data-v="${allOpen?0:1}">${allOpen?'Collapse all':'Expand all'}</button></div>`+items.map(i=>`<div class="gtone">${gtChart(i,m,'p'+i.j.jo_id,true)}</div>`).join('');
   }
   const j=cur.j,live=cur.tasks.filter(k=>!k.cx),fin=live.filter(k=>k.done&&k.target!=null),on=fin.filter(k=>k.sc.k==='ok'),
     over=live.filter(k=>!k.done&&k.sc&&k.sc.k==='over').length,soon=live.filter(k=>!k.done&&k.target!=null&&k.target>=m.today&&k.target-m.today<=7).length;
