@@ -114,9 +114,9 @@ main{padding:24px 28px 40px;max-width:none;width:100%}
 .strip{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px;box-shadow:var(--shadow)}
 .strip h2,.sec h2{font-size:15px;font-weight:700}
 .sbar{display:flex;gap:3px;height:34px;margin:12px 0 14px}
-.seg{border:0;border-radius:7px;cursor:pointer;min-width:10px;background:var(--c);opacity:.92}
-.seg:hover{opacity:1;filter:brightness(1.06)}
-.seg.empty{background:var(--line);cursor:default}
+.sgm{border:0;border-radius:7px;cursor:pointer;min-width:10px;background:var(--c);opacity:.92}
+.sgm:hover{opacity:1;filter:brightness(1.06)}
+.sgm.empty{background:var(--line);cursor:default}
 .slg{display:flex;flex-wrap:wrap;gap:8px 22px}
 .slg button{display:flex;align-items:center;gap:8px;background:none;border:0;cursor:pointer;color:var(--mut);padding:2px 0}
 .slg button i{width:9px;height:9px;border-radius:3px;background:var(--c)}.slg b{color:var(--ink)}
@@ -189,6 +189,21 @@ body.dopen #scrim{opacity:1;pointer-events:auto}body.dopen #drawer{transform:non
 .facts div:nth-child(4n){border-right:0}.facts div:nth-last-child(-n+4){border-bottom:0}
 .dacts{display:flex;flex-wrap:wrap;gap:8px}
 .tk{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line)}.tk:last-child{border:0}
+
+.tlist{list-style:none;margin:0;padding:6px 8px 8px}
+.tr{display:grid;grid-template-columns:34px minmax(0,1fr) auto auto;grid-template-areas:"o n s a" "o m m a" "o d d d";align-items:center;column-gap:10px;row-gap:3px;padding:9px 10px;border-radius:10px;border-bottom:1px solid var(--line)}
+.tr:last-child{border-bottom:0}.tr:hover{background:color-mix(in srgb,var(--brand) 4%,transparent)}.tr.cx{opacity:.7}.tr.cx .tr-n b{text-decoration:line-through}
+.tr-o{grid-area:o;display:flex;flex-direction:column;align-items:center;gap:0}.tr-o .no{font-size:12px;font-weight:700;color:var(--mut);line-height:1.2;min-width:20px;text-align:center}
+.mv{width:26px;height:20px;border:0;background:transparent;color:var(--mut);border-radius:6px;display:grid;place-items:center;cursor:pointer;padding:0}.mv:hover:not(:disabled){background:var(--surface2);color:var(--brand)}.mv:disabled{opacity:.25;cursor:default}.mv:focus-visible{outline:2px solid var(--brand)}
+.tr-n{grid-area:n;display:flex;align-items:center;gap:8px;min-width:0}.tr-n b{font-weight:600;font-size:14px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tr-ty{flex:none;font-size:11.5px;font-weight:600;color:var(--closed);background:color-mix(in srgb,var(--closed) 14%,transparent);border-radius:999px;padding:1px 9px;white-space:nowrap;max-width:45%;overflow:hidden;text-overflow:ellipsis}
+.tr-s{grid-area:s}.tr-a{grid-area:a;display:flex;gap:6px}
+.tr-m{grid-area:m;display:flex;align-items:center;gap:6px 14px;flex-wrap:wrap;font-size:12.5px;color:var(--mut);min-width:0}
+.tr-m .who,.tr-m .due{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}.tr-m .who .av{width:20px;height:20px;font-size:9px}.tr-m .due.over{color:var(--bad);font-weight:600}
+.tr-p{display:inline-flex;min-width:130px;flex:0 1 190px}.tr-p .pw{width:100%}.tr-p .pw b{font-size:12px}
+.tr-x{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.tr-d{grid-area:d;min-width:0}.tr-d .tdd summary{font-size:12.5px}
+@media(max-width:620px){.tr{grid-template-columns:30px minmax(0,1fr) auto;grid-template-areas:"o n s" "o m m" "o a a" "o d d"}.tr-a{justify-content:flex-start;margin-top:4px}.tr-p{flex:1 1 140px}}
 .tcards{display:grid;grid-template-columns:1fr;gap:10px;padding:14px 16px}
 .tc{border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0;box-shadow:inset 3px 0 0 var(--closed)}
 .tc.cx{opacity:.75}.tc-h{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.tc-n{font-weight:600;font-size:15px;min-width:0;overflow-wrap:anywhere}
@@ -790,7 +805,7 @@ function dash(){
   const cl=J.filter(j=>j.status==='Closed'&&j.tat!==''&&!isNaN(Number(j.tat)));
   const av_=cl.length?cl.reduce((a,j)=>a+Number(j.tat),0)/cl.length:NaN,avg=isNaN(av_)?'–':av_<1?'<1 day':av_.toFixed(1)+' days';
   const stages=['Submitted','Pending','In Progress','Completed','Closed'],tot=stages.reduce((a,s)=>a+cnt(s),0);
-  const strip=`<section class="strip"><h2>Where job orders stand</h2><div class="sbar">${tot?stages.filter(s=>cnt(s)).map(s=>`<button class="seg c-${scls(s)}" style="flex:${cnt(s)};--c:var(--${scls(s)==='sub'?'sub':scls(s)})" data-a="filter" data-s="${s}" aria-label="${esc(slabel(s))}: ${cnt(s)}" title="${esc(slabel(s))}: ${cnt(s)}"></button>`).join(''):'<div class="seg empty" style="flex:1"></div>'}</div><div class="slg">${stages.map(s=>`<button class="c-${scls(s)}" data-a="filter" data-s="${s}"><i></i>${esc(slabel(s))} <b>${cnt(s)}</b></button>`).join('')}</div></section>`;
+  const strip=`<section class="strip"><h2>Where job orders stand</h2><div class="sbar">${tot?stages.filter(s=>cnt(s)).map(s=>`<button class="sgm c-${scls(s)}" style="flex:${cnt(s)};--c:var(--${scls(s)==='sub'?'sub':scls(s)})" data-a="filter" data-s="${s}" aria-label="${esc(slabel(s))}: ${cnt(s)}" title="${esc(slabel(s))}: ${cnt(s)}"></button>`).join(''):'<div class="sgm empty" style="flex:1"></div>'}</div><div class="slg">${stages.map(s=>`<button class="c-${scls(s)}" data-a="filter" data-s="${s}"><i></i>${esc(slabel(s))} <b>${cnt(s)}</b></button>`).join('')}</div></section>`;
   const kp=(n,l,c)=>`<div class="${c||''}"><b>${n}</b><span>${l}</span></div>`;
   const kpis=`<section class="kpis" aria-label="Key numbers">${kp(J.length,'Total job orders')}${kp(act_.length,'Active')}${kp(cnt('Completed')+cnt('Closed'),'Completed')}${kp(over.length,'Overdue',over.length?'bad':'')}${kp(avg,'Average turnaround')}${kp(cnt('Cancelled'),'Cancelled')}</section>`;
   let left='',right='';
@@ -858,10 +873,13 @@ async function loadLog(){
 }
 
 /* ============ drawer ============ */
+const MV_UP='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg>',MV_DN='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
+/* Tasks of a job order in their working order. A task with no saved position keeps its place in the sheet. */
+function taskOrder(joId){return S.tasks.filter(t=>t.jo_id===joId).map((t,i)=>({t,k:t.sort_order!==''&&t.sort_order!=null&&!isNaN(Number(t.sort_order))?Number(t.sort_order):i+1,i})).sort((a,b)=>(a.k-b.k)||(a.i-b.i)).map(x=>x.t)}
 function drawer(){
   const j=jobOf(ui.jo),el=$('#drawer');
   if(!j){document.body.classList.remove('dopen');el.innerHTML='';return}
-  const me=S.me,mg=canManage(j),active=ACTIVE.indexOf(j.status)>=0,T=S.tasks.filter(t=>t.jo_id===j.jo_id);
+  const me=S.me,mg=canManage(j),active=ACTIVE.indexOf(j.status)>=0,T=S.tasks.filter(t=>t.jo_id===j.jo_id),TO=taskOrder(j.jo_id);
   const cur={Submitted:0,Pending:1,'In Progress':2,Completed:3,Closed:4}[j.status];
   const stg=[['Requested','Awaiting review'],['Approved','Developer assigned'],['In progress','Tasks underway'],['Completed','All tasks done'],['Closed','Finished']];
   const acts=[
@@ -886,14 +904,14 @@ function drawer(){
   <div><span>Team</span><b>${esc(tm(j.developer_team))}</b></div><div><span>Review time</span><b>${dur(gap(j.requested_at,j.reviewed_at))}</b></div><div><span>Execution time</span><b>${dur(gap(j.work_started_at,j.completed_at))}</b></div><div><span>Total turnaround</span><b>${j.closed_at?dur(gap(j.requested_at,j.closed_at)):'Open'}</b></div></div>
   <div><div style="display:flex;justify-content:space-between;margin-bottom:6px"><b>Progress</b><span style="color:var(--mut)">${T.length?'Average of '+T.length+' task'+(T.length===1?'':'s'):'Starts when tasks are added'}</span></div>${pbar(j.progress)}</div>
   ${acts?`<div class="dacts">${acts}</div>`:''}
-  ${(active||T.length)?`<div class="sec" style="margin:0"><header><h2>Tasks</h2><span class="sp"></span>${mg&&active?`<button class="btn sm" data-a="addtask" data-id="${j.jo_id}">${ic('plus',14)}Add task</button>`:''}</header>${T.length?`<div class="tcards">${T.map(t=>{const cx=t.status==='Cancelled',tf=D?D.files.filter(f=>f.task_id===t.task_id):[],can=active&&!cx&&(mg||t.assigned_to===me.email);
-    return `<article class="tc${cx?' cx':''}"><div class="tc-h"><b class="tc-n">${esc(t.task_name)}</b>${chip(t.status)}</div>
-    <div class="tc-ty">${esc(t.task_type==='Others'&&t.task_type_other?'Others: '+t.task_type_other:t.task_type)}</div>
-    <dl class="tc-m"><div><dt>Assigned to</dt><dd>${av(t.assigned_to)}<span>${esc(nm(t.assigned_to))}</span></dd></div><div><dt>Due date</dt><dd class="${taskOver(t)?'over':''}">${t.due_date?fd(t.due_date):'Not set'}</dd></div></dl>
-    ${cx?(t.cancel_reason?`<p class="tc-x">Cancelled: ${esc(t.cancel_reason)}</p>`:''):`<div class="tc-p"><b>${t.progress}%</b>${pbar(t.progress)}</div>`}
-    ${t.description?`<details class="tdd"><summary>Task description</summary><div class="td">${esc(t.description)}</div></details>`:''}
-    ${tf.length?`<div class="fchips" style="display:flex;gap:6px;flex-wrap:wrap">${tf.map(fchip).join('')}</div>`:''}
-    ${can||(active&&mg)?`<div class="tc-a">${can?`<button class="btn sm ghost" data-a="updtask" data-id="${t.task_id}">Update</button>`:''}${active&&mg?(cx?`<button class="btn sm ghost" data-a="reinstate" data-id="${t.task_id}">Reinstate</button>`:`<button class="btn sm ghost" data-a="canceltask" data-id="${t.task_id}">Cancel task</button>`):''}</div>`:''}</article>`}).join('')}</div>`:empty('No tasks yet',mg?'Break this job order into tasks and give them to developers.':'The assigned developer adds tasks.')}</div>`:''}
+  ${(active||T.length)?`<div class="sec" style="margin:0"><header><h2>Tasks</h2><span class="sp"></span>${mg&&active?`<button class="btn sm" data-a="addtask" data-id="${j.jo_id}">${ic('plus',14)}Add task</button>`:''}</header>${T.length?`<ul class="tlist">${TO.map((t,ix)=>{const cx=t.status==='Cancelled',tf=D?D.files.filter(f=>f.task_id===t.task_id):[],can=active&&!cx&&(mg||t.assigned_to===me.email),live=TO.filter(x=>x.status!=='Cancelled'),lp=live.indexOf(t),mv=active&&mg&&!cx&&live.length>1;
+    const ty=t.task_type==='Others'&&t.task_type_other?'Others: '+t.task_type_other:t.task_type;
+    return `<li class="tr${cx?' cx':''}"><div class="tr-o">${mv?`<button type="button" class="mv" data-a="mvtask" data-id="${t.task_id}" data-d="-1" aria-label="Move ${esc(t.task_name)} up" title="Move up"${lp===0?' disabled':''}>${MV_UP}</button><span class="no">${ix+1}</span><button type="button" class="mv" data-a="mvtask" data-id="${t.task_id}" data-d="1" aria-label="Move ${esc(t.task_name)} down" title="Move down"${lp===live.length-1?' disabled':''}>${MV_DN}</button>`:`<span class="no">${ix+1}</span>`}</div>
+    <div class="tr-n"><b title="${esc(t.task_name)}">${esc(t.task_name)}</b><span class="tr-ty">${esc(ty)}</span></div>
+    <div class="tr-s">${chip(t.status)}</div>
+    <div class="tr-m"><span class="who">${av(t.assigned_to)}${esc(nm(t.assigned_to))}</span><span class="due${taskOver(t)?' over':''}">${ic('clock',13)}${t.due_date?fd(t.due_date):'No due date'}</span>${cx?(t.cancel_reason?`<span class="tr-x" title="${esc(t.cancel_reason)}">Cancelled: ${esc(t.cancel_reason)}</span>`:''):`<span class="tr-p">${pbar(t.progress)}</span>`}</div>
+    ${can||(active&&mg)?`<div class="tr-a">${can?`<button class="btn sm ghost" data-a="updtask" data-id="${t.task_id}">Update</button>`:''}${active&&mg?(cx?`<button class="btn sm ghost" data-a="reinstate" data-id="${t.task_id}">Reinstate</button>`:`<button class="btn sm ghost" data-a="canceltask" data-id="${t.task_id}">Cancel</button>`):''}</div>`:''}
+    ${t.description||tf.length?`<div class="tr-d">${t.description?`<details class="tdd"><summary>Task description</summary><div class="td">${esc(t.description)}</div></details>`:''}${tf.length?`<div class="fchips">${tf.map(fchip).join('')}</div>`:''}</div>`:''}</li>`}).join('')}</ul>`:empty('No tasks yet',mg?'Break this job order into tasks and give them to developers.':'The assigned developer adds tasks.')}</div>`:''}
   <div class="sec" style="margin:0"><header><h2>Reference files</h2><span class="sp"></span>${canAdd?`<button class="btn sm" data-a="addfiles" data-id="${j.jo_id}">${ic('plus',14)}Add files</button>`:''}</header>${!D?'<div class="sk"></div>':jfiles.length?jfiles.map(f=>`<div class="fr">${ic('clip',18)}<div class="fn"><b title="${esc(f.file_name)}">${esc(f.file_name)}</b><small>${sz(f.size)} · ${esc(nm(f.uploaded_by))} · ${fdt(f.uploaded_at)}</small></div><button class="btn sm ghost" data-a="dl" data-id="${esc(f.attachment_id)}">Download</button></div>`).join(''):empty('No files attached')}</div>
   <div class="sec" style="margin:0"><header><h2>Activity</h2></header>${!D?'<div class="sk"></div><div class="sk"></div>':D.error?`<div style="padding:14px 18px">${esc(D.error)} <button class="btn sm ghost" data-a="reloaddetail" data-id="${j.jo_id}">Try again</button></div>`:items.length?`<ul class="tl">${items.slice(0,30).map(i=>`<li>${i.h}<small>${fdt(i.t)}</small></li>`).join('')}</ul>`:empty('No activity yet')}</div></div>`;
   document.body.classList.add('dopen');el.scrollTop=scrollTop;gtMountAll(el);
@@ -922,7 +940,7 @@ function gtModel(){
     const done=jDone(j),endRaw=dnum(j.completed_at)??dnum(j.closed_at),start=dnum(j.requested_at)??today,target=dnum(j.target_date);
     const end=done?(endRaw??start):Math.max(today,start),sc=sched(target,done&&endRaw!=null,end,today);
     const base=dnum(j.team_assigned_at)??dnum(j.approved_at)??start;
-    const tasks=S.tasks.filter(t=>t.jo_id===j.jo_id).map(t=>{
+    const tasks=taskOrder(j.jo_id).map(t=>{
       const cx=t.status==='Cancelled',td=t.status==='Completed'&&t.progress>=100,te=dnum(t.completed_at),ts=dnum(t.start_date)??base,tt=dnum(t.due_date);
       const e=td?(te??ts):Math.max(today,ts),s=Math.min(ts,e);
       return {t,cx,done:td,start:s,end:e,target:tt,sc:cx?null:sched(tt,td&&te!=null,e,today)};
@@ -1097,6 +1115,10 @@ const H={
     onSubmit:()=>{doSignOut();return null}}),
   approve:el=>approveJo(jobOf(el.dataset.id)),reject:el=>rejectJo(jobOf(el.dataset.id)),assign:el=>assignJo(jobOf(el.dataset.id)),
   cancel:el=>cancelJo(jobOf(el.dataset.id)),closejo:el=>closeJo(jobOf(el.dataset.id)),addtask:el=>addTask(jobOf(el.dataset.id)),
+  mvtask:el=>{const t=S.tasks.find(x=>x.task_id===el.dataset.id);if(!t)return;const all=taskOrder(t.jo_id),live=all.filter(x=>x.status!=='Cancelled'),d=+el.dataset.d,from=live.indexOf(t),to=from+d;
+    if(to<0||to>=live.length)return;const other=live[to],ids=all.map(x=>x.task_id),i1=ids.indexOf(t.task_id),i2=ids.indexOf(other.task_id);[ids[i1],ids[i2]]=[ids[i2],ids[i1]];
+    const bak=S.tasks.map(x=>x.sort_order);ids.forEach((id,i)=>{S.tasks.find(x=>x.task_id===id).sort_order=i+1});render();
+    act('reorderTasks',{jo_id:t.jo_id,order:ids},null,1).then(m=>{if(m){S.tasks.forEach((x,i)=>{x.sort_order=bak[i]});render();toast(m,'err')}})},
   canceltask:el=>{const t=S.tasks.find(x=>x.task_id===el.dataset.id);dialog({title:'Cancel task',desc:t.task_name,label:'Cancel task',danger:1,busy:'Cancelling…',cancel:'Keep task',fields:[{k:'reason',l:'Reason',t:'area',rows:3,max:500,req:1,hint:'Why is this task being cancelled? It stays on the request, marked Cancelled, and no longer counts toward progress.'}],onSubmit:v=>act('cancelTask',{task_id:t.task_id,reason:v.reason},'Task cancelled',1)})},
   reinstate:el=>{const t=S.tasks.find(x=>x.task_id===el.dataset.id);dialog({title:'Reinstate task',desc:t.task_name,label:'Reinstate task',busy:'Reinstating…',html:'<p class="dd">The task goes back into the job order and counts toward progress again.</p>',fields:[],onSubmit:()=>act('reinstateTask',{task_id:t.task_id},'Task reinstated',1)})},
   updtask:el=>updTask(S.tasks.find(t=>t.task_id===el.dataset.id)),
