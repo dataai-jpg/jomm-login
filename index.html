@@ -318,6 +318,8 @@ dialog textarea{max-height:40vh}
 .gr.pj .gl{background:color-mix(in srgb,var(--brand) 9%,var(--surface));box-shadow:inset 4px 0 0 var(--brand)}.gr.pj .gl b{font-size:14.5px;font-weight:700}
 .gr.pj .gtk{background-color:color-mix(in srgb,var(--brand) 4%,transparent)}
 .gr.tk2 .gl{box-shadow:inset 4px 0 0 var(--closed)}
+.gr.go{cursor:pointer}.gr.go:hover .gl{filter:brightness(1.06)}.gr.go:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}.gr.tk2.go .gl b{cursor:pointer}
+.gl small.dv{color:var(--ink)}.gl small.dv b{font-weight:600;font:inherit;font-weight:600;cursor:inherit}.gthint{margin:0 0 8px;font-size:12.5px;color:var(--mut)}.gtone{margin-bottom:16px}.gtf select{width:auto;flex:none;border:1px solid var(--line2);border-radius:10px;padding:8px 10px;font:inherit;font-size:13px;background:var(--surface);color:var(--ink);min-height:36px}
 .gl mark{background:color-mix(in srgb,var(--sub) 35%,transparent);color:inherit;border-radius:3px;padding:0 1px}
 .gtk{overflow:hidden}
 </style></head>
@@ -885,7 +887,7 @@ function drawer(){
 }
 
 /* ============ timeline (Gantt): target dates against actual completion ============ */
-const gt={px:14,pos:{},sel:null,q:'',from:'',to:''};
+const gt={px:14,pos:{},sel:'',st:'',q:'',from:'',to:''};
 const hl=(txt)=>{const t=esc(txt||'');const q=gt.q.trim();if(!q)return t;const re=new RegExp(esc(q).replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'ig');return t.replace(re,x=>'<mark>'+x+'</mark>')};
 const gtWin=()=>{let a=gt.from?dnum(gt.from):null,b=gt.to?dnum(gt.to):null;if(a!=null&&b!=null&&a>b)[a,b]=[b,a];return {a,b}};
 const plural=(n,w)=>n+' '+w+(n===1?'':'s');
@@ -928,7 +930,7 @@ function gtStats(m){
     soonJ:J.filter(i=>!i.done&&i.target!=null&&i.target>=today&&i.target-today<=7).length
   };
 }
-/* One project (job order) as a Gantt chart: the project bar against the requestor's target date, and one bar per task against its due date. */
+/* One job order as a Gantt chart: the job order bar against the requestor's target date, and one bar per task against its due date. */
 function gtChart(i,m,key,useWin){
   const px=gt.px,w=useWin?gtWin():{a:null,b:null},windowed=w.a!=null||w.b!=null;
   let lo=1e9,hi=-1e9;
@@ -954,15 +956,16 @@ function gtChart(i,m,key,useWin){
     else out+=done?`<div class="gb done" style="left:${X(s)}px;width:${w(s,e)}px"></div>`:`<div class="gb base" style="left:${X(s)}px;width:${w(s,e)}px"><i style="width:${prog}%"></i></div>`;
     if(target!=null)out+=`<span class="gm" style="left:${XC(target)}px" title="Target date: ${esc(dlabel(target))}"></span>`;
     return out};
-  const j=i.j,nT=i.tasks.length;
+  const j=i.j,nT=i.tasks.length,nav=String(key).charAt(0)==='p',go=nav?` data-a="open" data-id="${j.jo_id}" role="button" tabindex="0" title="Open job order details"`:'';
+  const dev=j.assigned_developer?nm(j.assigned_developer):'Not assigned yet';
   const dates=`Requestor target ${i.target!=null?dlabel(i.target):'not set'}${i.done?' · Finished '+dlabel(i.end):''}`;
-  let rows=`<div class="gr pj"><div class="gl"><div class="gt2"><div class="tl1"><em class="tg pj">Request</em><b title="${esc(j.title)}">${hl(j.title)}</b></div><small>${esc(j.jo_number)} · Whole project · requestor target</small><span class="chip c-${i.sc.c}"><i></i>${esc(i.sc.t)}</span></div></div>
+  let rows=`<div class="gr pj${nav?' go':''}"${go}><div class="gl"><div class="gt2"><div class="tl1"><em class="tg pj">Request</em><b title="${esc(j.title)}">${hl(j.title)}</b></div><small>${esc(j.jo_number)} · Requestor: ${esc(nm(j.requested_by))}</small><small class="dv">Developer: <b>${esc(dev)}</b></small><span class="chip c-${i.sc.c}"><i></i>${esc(i.sc.t)}</span></div></div>
     <div class="gtk" style="width:${W}px;${grid}" title="${esc(dates)}">${mk(i.start,i.end,i.target,i.done,j.progress,i.sc)}</div></div>`;
   rows+=tasksShown.map(k=>{const t=k.t;
-    return `<div class="gr tk2${k.cx?' cx':''}"><div class="gl"><div class="gt2"><div class="tl1"><em class="tg tk">Task</em><b title="${esc(t.task_name)}">${hl(t.task_name)}</b></div><small>${esc(nm(t.assigned_to))} · ${esc(t.task_type==='Others'&&t.task_type_other?t.task_type_other:t.task_type)}</small>${k.cx?'<span class="chip c-bad"><i></i>Cancelled</span>':`<span class="chip c-${k.sc.c}"><i></i>${esc(k.sc.t)}</span>`}</div></div>
+    return `<div class="gr tk2${k.cx?' cx':''}${nav?' go':''}"${go}><div class="gl"><div class="gt2"><div class="tl1"><em class="tg tk">Task</em><b title="${esc(t.task_name)}">${hl(t.task_name)}</b></div><small>${esc(nm(t.assigned_to))} · ${esc(t.task_type==='Others'&&t.task_type_other?t.task_type_other:t.task_type)}</small>${k.cx?'<span class="chip c-bad"><i></i>Cancelled</span>':`<span class="chip c-${k.sc.c}"><i></i>${esc(k.sc.t)}</span>`}</div></div>
       <div class="gtk" style="width:${W}px;${grid}" title="${esc('Due '+(k.target!=null?dlabel(k.target):'not set')+(k.done?' · Finished '+dlabel(k.end):''))}">${k.cx?'':mk(k.start,k.end,k.target,k.done,t.progress,k.sc)}</div></div>`}).join('');
   if(!tasksShown.length)rows+=`<div class="gr tk2"><div class="gl"><div class="gt2"><small>${nT?'No tasks in this date range':'No tasks yet'}</small></div></div><div class="gtk" style="width:${W}px;min-height:42px"></div></div>`;
-  return `<div class="gt" data-key="${esc(key)}" tabindex="0" aria-label="Timeline chart for ${esc(j.title)}"><div class="gin"><div class="gr gh"><div class="gl">Project and tasks</div><div class="gtk" style="width:${W}px">${head}</div></div>${rows}${m.today>=lo&&m.today<=hi?`<span class="gtd" style="left:calc(var(--lw) + ${XC(m.today)}px)"></span>`:''}</div></div>`;
+  return `<div class="gt" data-key="${esc(key)}" tabindex="0" aria-label="Timeline chart for job order ${esc(j.title)}"><div class="gin"><div class="gr gh"><div class="gl">Job order and tasks</div><div class="gtk" style="width:${W}px">${head}</div></div>${rows}${m.today>=lo&&m.today<=hi?`<span class="gtd" style="left:calc(var(--lw) + ${XC(m.today)}px)"></span>`:''}</div></div>`;
 }
 const gtLegend=`<div class="gleg"><span><i class="lb" style="background:var(--done)"></i>Finished</span><span><i class="lb" style="background:var(--prog)"></i>In progress</span><span><i class="lb" style="background:var(--bad)"></i>Past the target date</span><span><i class="ld"></i>Target or due date</span><span><i class="ll"></i>Today</span></div>`;
 const gtZoom=()=>`<div class="seg" role="group" aria-label="Zoom">${[[6,'Month'],[14,'Week'],[30,'Day']].map(([v,l])=>`<button type="button" data-a="gtz" data-v="${v}" class="${gt.px===v?'on':''}">${l}</button>`).join('')}</div>`;
@@ -980,31 +983,42 @@ function gtSection(j){
   const m=gtModel(),i=m.items.find(x=>x.j.jo_id===j.jo_id);if(!i)return '';
   return `<div class="sec" style="margin:0"><header><h2>Timeline</h2><span class="sp"></span>${gtZoom()}</header><div style="padding:10px 14px 4px">${gtLegend}</div><div style="padding:0 0 4px">${gtChart(i,m,'d'+j.jo_id)}</div></div>`;
 }
-/* Does a project (or one of its tasks) match the search text? */
+/* Does a job order (or one of its tasks) match the search text? */
 const gtMatch=i=>{const q=gt.q.trim().toLowerCase();if(!q)return true;const j=i.j,has=x=>String(x||'').toLowerCase().indexOf(q)>=0;
   return has(j.title)||has(j.jo_number)||has(nm(j.requested_by))||has(nm(j.assigned_developer))||i.tasks.some(k=>has(k.t.task_name)||has(nm(k.t.assigned_to)))};
 const gtInRange=i=>{const w=gtWin();if(w.a==null&&w.b==null)return true;const e=Math.max(i.end,i.target??i.end);return (w.b==null||i.start<=w.b)&&(w.a==null||e>=w.a)};
+const gtStatus=i=>!gt.st||(gt.st==='Overdue'?(!i.done&&i.sc.k==='over'):i.j.status===gt.st);
+const GT_ST=['Pending','In Progress','Completed','Closed','Overdue'];
 function gtBody(){
   const m=gtModel(),all=m.items.slice().sort((a,b)=>(a.done-b.done)||((a.target??1e9)-(b.target??1e9))||(b.start-a.start));
-  if(!all.length)return `<div class="sec">${empty('No projects to show yet','A project appears here once a manager has approved it.')}</div>`;
-  const items=all.filter(i=>gtMatch(i)&&gtInRange(i)),filtered=gt.q.trim()||gt.from||gt.to;
-  if(!items.length)return `<div class="sec">${empty('No projects match','Try a different search or a wider date range.')}<p style="text-align:center;margin:0 0 18px"><button class="btn sm ghost" type="button" data-a="gtclr">Clear search and dates</button></p></div>`;
-  const cur=items.find(i=>i.j.jo_id===gt.sel)||items[0];gt.sel=cur.j.jo_id;
+  if(!all.length)return `<div class="sec">${empty('No job orders to show yet','A job order appears here once a manager has approved it.')}</div>`;
+  const items=all.filter(i=>gtMatch(i)&&gtInRange(i)&&gtStatus(i)),filtered=gt.q.trim()||gt.from||gt.to||gt.st;
+  if(!items.length)return `<div class="sec">${empty('No job orders match','Try a different search, status or a wider date range.')}<p style="text-align:center;margin:0 0 18px"><button class="btn sm ghost" type="button" data-a="gtclr">Clear search, status and dates</button></p></div>`;
+  const cur=items.find(i=>i.j.jo_id===gt.sel)||null;
+  const opt=i=>`<option value="${i.j.jo_id}"${i===cur?' selected':''}>${esc(i.j.jo_number)}: ${esc(i.j.title)} (${esc(i.j.status.toLowerCase())})</option>`;
+  const pick=`<div class="gtb"><div class="fld" style="margin:0;flex:1;min-width:220px;max-width:520px"><label for="gtsel">Job order${filtered?` (${items.length} of ${all.length} shown)`:''}</label><select id="gtsel"><option value=""${cur?'':' selected'}>All job orders (${items.length})</option>${items.map(opt).join('')}</select></div></div>`;
+  if(!cur){
+    const st=gtStats({today:m.today,items}),pl=(n,w)=>n+' '+w+(n===1?'':'s');
+    const tiles=`<div class="gtiles">
+    <div class="gtl ${st.overJ?'bad':''}"><b>${st.overJ}</b><span>Job orders overdue now</span><small>${pl(st.soonJ,'job order')} due in the next 7 days</small></div>
+    <div class="gtl ${st.finJ&&st.onJ==='100%'?'ok':''}"><b>${st.onJ}</b><span>Finished on time</span><small>${st.finJ?'Of '+pl(st.finJ,'finished job order')+' with a target date':'No finished job order with a target date yet'}</small></div>
+    <div class="gtl"><b>${st.onT}</b><span>Tasks finished on time</span><small>Against each task's due date</small></div>
+    <div class="gtl ${st.overT?'bad':''}"><b>${st.overT}</b><span>Tasks overdue now</span><small>Across ${pl(items.length,'job order')}</small></div></div>`;
+    return pick+tiles+gtLegend+`<p class="gthint">Select a job order or task row to see its details.</p>`+items.map(i=>`<div class="gtone">${gtChart(i,m,'p'+i.j.jo_id,true)}</div>`).join('');
+  }
   const j=cur.j,live=cur.tasks.filter(k=>!k.cx),fin=live.filter(k=>k.done&&k.target!=null),on=fin.filter(k=>k.sc.k==='ok'),
     over=live.filter(k=>!k.done&&k.sc&&k.sc.k==='over').length,soon=live.filter(k=>!k.done&&k.target!=null&&k.target>=m.today&&k.target-m.today<=7).length;
-  const opt=i=>`<option value="${i.j.jo_id}"${i===cur?' selected':''}>${esc(i.j.jo_number)}: ${esc(i.j.title)} (${i.done?'completed':'in progress'})</option>`;
-  const pick=`<div class="gtb"><div class="fld" style="margin:0;flex:1;min-width:220px;max-width:520px"><label for="gtsel">Project${filtered?` (${items.length} of ${all.length} shown)`:''}</label><select id="gtsel">${items.map(opt).join('')}</select></div></div>`;
   const tiles=`<div class="gtiles">
-    <div class="gtl ${cur.sc.c==='bad'?'bad':cur.sc.c==='done'?'ok':''}"><b>${esc(cur.sc.t)}</b><span>Project against the requestor's target</span><small>Target ${cur.target!=null?dlabel(cur.target):'not set'}. ${cur.done?'Finished '+dlabel(cur.end)+'.':'Still open.'}</small></div>
-    <div class="gtl"><b>${j.progress}%</b><span>Project progress</span><small>${esc(j.status)} · ${plural(live.length,'active task')}</small></div>
+    <div class="gtl ${cur.sc.c==='bad'?'bad':cur.sc.c==='done'?'ok':''}"><b>${esc(cur.sc.t)}</b><span>Job order against the requestor's target</span><small>Target ${cur.target!=null?dlabel(cur.target):'not set'}. ${cur.done?'Finished '+dlabel(cur.end)+'.':'Still open.'}</small></div>
+    <div class="gtl"><b>${j.progress}%</b><span>Job order progress</span><small>${esc(j.status)} · ${plural(live.length,'active task')}</small></div>
     <div class="gtl ${fin.length&&on.length===fin.length?'ok':''}"><b>${fin.length?on.length+' of '+fin.length:'–'}</b><span>Finished tasks on time</span><small>${fin.length?'Against each task\'s due date':'No finished task with a due date yet'}</small></div>
     <div class="gtl ${over?'bad':''}"><b>${over}</b><span>Tasks overdue now</span><small>${plural(soon,'task')} due in the next 7 days</small></div></div>`;
-  return pick+tiles+gtLegend+gtChart(cur,m,'p'+j.jo_id,true)+`<p class="dd" style="margin:0 0 16px"><a href="#" data-a="open" data-id="${j.jo_id}" style="color:var(--brand);font-weight:600">Open project details</a></p>`;
+  return pick+tiles+gtLegend+`<p class="gthint">Select the job order or a task row to see its details.</p>`+gtChart(cur,m,'p'+j.jo_id,true);
 }
 function timeline(){
-  const bar=`<div class="gtb gtf"><input id="gtq" type="search" placeholder="Search project, JO number, requestor or task" value="${esc(gt.q)}" aria-label="Search" autocomplete="off">
+  const bar=`<div class="gtb gtf"><input id="gtq" type="search" placeholder="Search job order, JO number, requestor, developer or task" value="${esc(gt.q)}" aria-label="Search" autocomplete="off">
     <label class="gtd2"><span>From</span><input id="gtfrom" type="date" value="${esc(gt.from)}"></label><label class="gtd2"><span>To</span><input id="gtto" type="date" value="${esc(gt.to)}"></label>
-    <div class="seg" role="group" aria-label="Date range">${[['month','This month'],['30','Last 30 days'],['all','All dates']].map(([k,l])=>`<button type="button" data-a="gtp" data-v="${k}">${l}</button>`).join('')}</div><span class="sp"></span>${gtZoom()}</div>`;
+    <div class="seg" role="group" aria-label="Date range">${[['month','This month'],['30','Last 30 days'],['all','All dates']].map(([k,l])=>`<button type="button" data-a="gtp" data-v="${k}">${l}</button>`).join('')}</div><select id="gtst" aria-label="Status">${[['','All statuses']].concat(GT_ST.map(x=>[x,x])).map(([v,l])=>`<option value="${v}"${gt.st===v?' selected':''}>${l}</option>`).join('')}</select><span class="sp"></span>${gtZoom()}</div>`;
   return bar+`<div id="gtv">${gtBody()}</div>`;
 }
 /* Redraws only the project list and chart, so typing in the search box keeps its focus. */
@@ -1041,7 +1055,7 @@ const H={
     else if(v==='month'){gt.from=iso(new Date(Date.UTC(t.getUTCFullYear(),t.getUTCMonth(),1)));gt.to=iso(new Date(Date.UTC(t.getUTCFullYear(),t.getUTCMonth()+1,0)))}
     else{gt.to=iso(t);gt.from=iso(new Date(t.getTime()-30*864e5))}
     gt.pos={};render()},
-  gtclr:()=>{gt.q='';gt.from='';gt.to='';gt.pos={};render()},
+  gtclr:()=>{gt.q='';gt.st='';gt.from='';gt.to='';gt.pos={};render()},
   nav:el=>{ui.page=el.dataset.p;ui.jo=null;ui.q='';if(ui.page==='log')loadLog();else render();scrollTo(0,0)},
   open:el=>{ui.jo=el.dataset.id;drawer()},
   addfiles:el=>addFiles(jobOf(el.dataset.id)),
@@ -1080,6 +1094,7 @@ document.addEventListener('keydown',e=>{
 document.addEventListener('input',e=>{if(e.target.id==='gtq'){gt.q=e.target.value;gt.pos={};gtRefresh()}
   if(e.target.id==='q'){ui.q=e.target.value;$('#res').innerHTML=results()}});
 document.addEventListener('change',e=>{if(e.target.id==='gtsel'){gt.sel=e.target.value;render()}
+  if(e.target.id==='gtst'){gt.st=e.target.value;render()}
   if(e.target.id==='gtfrom'||e.target.id==='gtto'){gt[e.target.id==='gtfrom'?'from':'to']=e.target.value;gt.pos={};gtRefresh()}
   if(e.target.id==='pr'){ui.pr=e.target.value;$('#res').innerHTML=results()}});
 
