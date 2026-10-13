@@ -194,6 +194,8 @@ body.dopen #scrim{opacity:1;pointer-events:auto}body.dopen #drawer{transform:non
 .tr{display:grid;grid-template-columns:30px minmax(0,1fr) auto auto;grid-template-areas:"o n p a" "o m p a" "o d d d";align-items:center;column-gap:10px;row-gap:1px;padding:6px 8px;border-radius:10px;border-bottom:1px solid var(--line)}
 .tr:last-child{border-bottom:0}.tr:hover{background:color-mix(in srgb,var(--brand) 4%,transparent)}.tr.cx{opacity:.7}.tr.cx .tr-n b{text-decoration:line-through}
 .tr-o{grid-area:o;display:flex;flex-direction:column;align-items:center;gap:0}.tr-o .no{font-size:11.5px;font-weight:700;color:var(--mut);line-height:1.1;min-width:20px;text-align:center}
+.grip{width:26px;height:18px;border:0;background:transparent;color:var(--mut);border-radius:5px;display:grid;place-items:center;cursor:grab;padding:0;touch-action:none;opacity:.7}.grip:hover,.grip:focus-visible{opacity:1;color:var(--brand);background:var(--surface2)}.grip:focus-visible{outline:2px solid var(--brand)}
+.tr.shift{transition:transform .16s ease}.tr.dragging{position:relative;z-index:5;background:var(--surface);box-shadow:0 8px 24px rgba(0,0,0,.22);border-radius:10px;cursor:grabbing;transition:none}.tr.dragging .grip{cursor:grabbing}body.dragging-row{user-select:none;-webkit-user-select:none;cursor:grabbing}
 .mv{width:26px;height:14px;border:0;background:transparent;color:var(--mut);border-radius:5px;display:grid;place-items:center;cursor:pointer;padding:0}.mv svg{width:12px;height:12px}.mv:hover:not(:disabled){background:var(--surface2);color:var(--brand)}.mv:disabled{opacity:.25;cursor:default}.mv:focus-visible{outline:2px solid var(--brand)}
 .tr-n{grid-area:n;display:flex;align-items:center;gap:8px;min-width:0}.tr-n b{font-weight:600;font-size:13.5px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tr-ty{flex:none;font-size:11px;font-weight:600;color:var(--closed);background:color-mix(in srgb,var(--closed) 14%,transparent);border-radius:999px;padding:0 8px;white-space:nowrap;max-width:45%;overflow:hidden;text-overflow:ellipsis}
@@ -877,8 +879,57 @@ async function loadLog(){
 }
 
 /* ============ drawer ============ */
-const MV_UP='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg>',MV_DN='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
+const GRIP='<svg width="14" height="18" viewBox="0 0 14 18" fill="currentColor" aria-hidden="true"><circle cx="4" cy="3" r="1.6"/><circle cx="10" cy="3" r="1.6"/><circle cx="4" cy="9" r="1.6"/><circle cx="10" cy="9" r="1.6"/><circle cx="4" cy="15" r="1.6"/><circle cx="10" cy="15" r="1.6"/></svg>',MV_UP='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg>',MV_DN='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
 const donut=p=>{p=Math.max(0,Math.min(100,+p||0));const r=14,c=2*Math.PI*r,k=p>=100?'done':p>0?'prog':'pen';return `<span class="dn" role="img" aria-label="${p}% complete" title="${p}% complete"><svg width="38" height="38" viewBox="0 0 38 38" aria-hidden="true"><circle cx="19" cy="19" r="${r}" class="dn-t"/><circle cx="19" cy="19" r="${r}" class="dn-v c-${k}" stroke-dasharray="${(c*p/100).toFixed(2)} ${c.toFixed(2)}" transform="rotate(-90 19 19)"/></svg><b>${p}</b></span>`};
+
+/* Saves a new order for the active tasks of a job order. Cancelled tasks keep their slots. The screen updates first and rolls back if the save fails. */
+function applyTaskOrder(joId,liveIds,refocus){
+  const all=taskOrder(joId),live=all.filter(x=>x.status!=='Cancelled').map(x=>x.task_id);
+  if(live.join()===liveIds.join())return;
+  let k=0;const ids=all.map(x=>x.status==='Cancelled'?x.task_id:liveIds[k++]);
+  const bak=S.tasks.map(x=>x.sort_order);ids.forEach((id,i)=>{S.tasks.find(x=>x.task_id===id).sort_order=i+1});render();
+  const back=()=>{if(!refocus)return;const g=document.querySelector(`.grip[data-drag="${refocus}"]`);if(g)g.focus()};back();
+  act('reorderTasks',{jo_id:joId,order:ids},null,1).then(m=>{if(m){S.tasks.forEach((x,i)=>{x.sort_order=bak[i]});render();toast(m,'err')}back()});
+}
+/* Drag a row by its handle (mouse, touch or pen). The row follows the pointer and the others slide out of the way. */
+let DR=null;
+document.addEventListener('pointerdown',e=>{
+  const g=e.target.closest&&e.target.closest('.grip');if(!g||(e.button!==undefined&&e.button!==0)||!S)return;
+  const li=g.closest('.tr'),ul=li.parentElement,rows=[...ul.querySelectorAll('.tr')].filter(r=>r.querySelector('.grip'));
+  const from=rows.indexOf(li);if(from<0||rows.length<2)return;e.preventDefault();
+  const rect=rows.map(r=>r.getBoundingClientRect()),h=rect[from].height;
+  DR={g,li,ul,rows,rect,from,to:from,y0:e.clientY,h,id:e.pointerId,moved:false,joId:g.closest('[data-jo]')?.dataset.jo||ui.jo};
+  try{g.setPointerCapture(e.pointerId)}catch(_){}
+});
+document.addEventListener('pointermove',e=>{
+  if(!DR||e.pointerId!==DR.id)return;const d=DR,dy=e.clientY-d.y0;
+  if(!d.moved&&Math.abs(dy)<4)return;
+  if(!d.moved){d.moved=true;d.li.classList.add('dragging');d.rows.forEach(r=>{if(r!==d.li)r.classList.add('shift')});document.body.classList.add('dragging-row')}
+  const lo=d.rect[0].top-d.rect[d.from].top,hi=d.rect[d.rows.length-1].top-d.rect[d.from].top;
+  d.li.style.transform=`translateY(${Math.max(lo,Math.min(hi,dy))}px)`;
+  const mid=d.rect[d.from].top+dy+d.h/2;let to=d.from;
+  for(let i=d.from+1;i<d.rect.length;i++){if(mid>d.rect[i].top+d.rect[i].height/2)to=i}
+  for(let i=0;i<d.from;i++){if(mid<d.rect[i].top+d.rect[i].height/2){to=i;break}}
+  d.to=to;
+  d.rows.forEach((r,i)=>{if(r===d.li)return;let sh=0;if(d.from<d.to&&i>d.from&&i<=d.to)sh=-d.h;if(d.from>d.to&&i<d.from&&i>=d.to)sh=d.h;r.style.transform=sh?`translateY(${sh}px)`:''});
+  const sc=d.ul.closest('#drawer');if(sc){const b=sc.getBoundingClientRect();if(e.clientY<b.top+60)sc.scrollTop-=12;else if(e.clientY>b.bottom-60)sc.scrollTop+=12}
+});
+function endDrag(e,cancel){
+  if(!DR||(e&&e.pointerId!==DR.id))return;const d=DR;DR=null;
+  d.rows.forEach(r=>{r.classList.remove('shift','dragging');r.style.transform=''});document.body.classList.remove('dragging-row');
+  try{d.g.releasePointerCapture(d.id)}catch(_){}
+  if(cancel||!d.moved||d.to===d.from)return;
+  const ids=d.rows.map(r=>r.querySelector('.grip').dataset.drag);const [x]=ids.splice(d.from,1);ids.splice(d.to,0,x);
+  const t=S.tasks.find(t=>t.task_id===x);if(t)applyTaskOrder(t.jo_id,ids);
+}
+document.addEventListener('pointerup',e=>endDrag(e,false));
+document.addEventListener('pointercancel',e=>endDrag(e,true));
+document.addEventListener('keydown',e=>{
+  const g=e.target.closest&&e.target.closest('.grip');if(!g||(e.key!=='ArrowUp'&&e.key!=='ArrowDown'))return;e.preventDefault();
+  const t=S.tasks.find(x=>x.task_id===g.dataset.drag);if(!t)return;
+  const live=taskOrder(t.jo_id).filter(x=>x.status!=='Cancelled').map(x=>x.task_id),i=live.indexOf(t.task_id),j=i+(e.key==='ArrowUp'?-1:1);
+  if(j<0||j>=live.length)return;[live[i],live[j]]=[live[j],live[i]];applyTaskOrder(t.jo_id,live,t.task_id);
+});
 /* Tasks of a job order in their working order. A task with no saved position keeps its place in the sheet. */
 function taskOrder(joId){return S.tasks.filter(t=>t.jo_id===joId).map((t,i)=>({t,k:t.sort_order!==''&&t.sort_order!=null&&!isNaN(Number(t.sort_order))?Number(t.sort_order):i+1,i})).sort((a,b)=>(a.k-b.k)||(a.i-b.i)).map(x=>x.t)}
 function drawer(){
@@ -900,7 +951,7 @@ function drawer(){
   (D?D.history:[]).filter(h=>h.jo_id===j.jo_id).forEach(h=>items.push({t:h.changed_at,h:`<b>${esc(nm(h.changed_by))}</b> ${h.from_status===h.to_status?esc(h.note||'updated the request'):h.from_status?'moved this to '+esc(slabel(h.to_status)):'submitted the request'}${h.from_status!==h.to_status&&h.note?`<small>${esc(h.note)}</small>`:''}`}));
   (D?D.updates:[]).filter(u=>u.jo_id===j.jo_id).forEach(u=>{const t=T.find(x=>x.task_id===u.task_id)||{},fl=D.files.filter(f=>f.report_id===u.id);items.push({t:u.updated_at,h:`<b>${esc(nm(u.updated_by))}</b> set ${esc(t.task_name||'a task')} ${u.prev_progress!==''&&u.prev_progress!==undefined?'from '+esc(u.prev_progress)+'% to ':'to '}<b>${esc(u.progress)}%</b>${u.remark?`<small class="rtext">${esc(u.remark)}</small>`:''}${fl.length?`<div class="fchips">${fl.map(fchip).join('')}</div>`:''}`})});
   items.sort((a,b)=>String(b.t).localeCompare(String(a.t)));
-  const scrollTop=el.scrollTop;
+  const scrollTop=el.scrollTop,fk=document.activeElement&&document.activeElement.dataset&&el.contains(document.activeElement)?document.activeElement.dataset.drag:'';
   el.innerHTML=`<div class="dr-h"><b>${esc(j.jo_number)}</b>${chip(j.status)}<span class="sp"></span><button class="ib" data-a="close" aria-label="Close details">${ic('x')}</button></div>
   <div class="dr-b"><h2>${esc(j.title)}</h2>
   ${cur!==undefined?`<div class="stages">${stg.map((s,i)=>`<div class="${i<cur?'done':i===cur?'cur':''}">${s[0]}<br><span style="font-weight:400">${i===cur?s[1]:''}</span></div>`).join('')}</div>`:`<div class="note"><b>${esc(slabel(j.status))}.</b> ${esc(j.review_note||'')}</div>`}
@@ -911,7 +962,7 @@ function drawer(){
   ${acts?`<div class="dacts">${acts}</div>`:''}
   ${(active||T.length)?`<div class="sec" style="margin:0"><header><h2>Tasks</h2><span class="sp"></span>${mg&&active?`<button class="btn sm" data-a="addtask" data-id="${j.jo_id}">${ic('plus',14)}Add task</button>`:''}</header>${T.length?`<ul class="tlist">${TO.map((t,ix)=>{const cx=t.status==='Cancelled',tf=D?D.files.filter(f=>f.task_id===t.task_id):[],can=active&&!cx&&(mg||t.assigned_to===me.email),live=TO.filter(x=>x.status!=='Cancelled'),lp=live.indexOf(t),mv=active&&mg&&!cx&&live.length>1;
     const ty=t.task_type==='Others'&&t.task_type_other?'Others: '+t.task_type_other:t.task_type;
-    return `<li class="tr${cx?' cx':''}"><div class="tr-o">${mv?`<button type="button" class="mv" data-a="mvtask" data-id="${t.task_id}" data-d="-1" aria-label="Move ${esc(t.task_name)} up" title="Move up"${lp===0?' disabled':''}>${MV_UP}</button><span class="no">${ix+1}</span><button type="button" class="mv" data-a="mvtask" data-id="${t.task_id}" data-d="1" aria-label="Move ${esc(t.task_name)} down" title="Move down"${lp===live.length-1?' disabled':''}>${MV_DN}</button>`:`<span class="no">${ix+1}</span>`}</div>
+    return `<li class="tr${cx?' cx':''}"><div class="tr-o">${mv?`<button type="button" class="grip" data-drag="${t.task_id}" aria-label="Reorder ${esc(t.task_name)}. Drag, or press the up and down arrow keys." title="Drag to reorder">${GRIP}</button><span class="no">${ix+1}</span>`:`<span class="no">${ix+1}</span>`}</div>
     <div class="tr-n"><b title="${esc(t.task_name)}">${esc(t.task_name)}</b><span class="tr-ty">${esc(ty)}</span></div>
     <div class="tr-m">${chip(t.status)}<span class="who">${av(t.assigned_to)}${esc(nm(t.assigned_to))}</span><span class="due${taskOver(t)?' over':''}">${ic('clock',13)}${t.due_date?fd(t.due_date):'No due date'}</span>${cx&&t.cancel_reason?`<span class="tr-x" title="${esc(t.cancel_reason)}">${esc(t.cancel_reason)}</span>`:''}${t.description?`<details class="tdd"><summary>Details</summary><div class="td">${esc(t.description)}</div></details>`:''}</div>
     <div class="tr-p">${cx?'<span class="dn none" title="Cancelled">–</span>':donut(t.progress)}</div>
@@ -920,6 +971,7 @@ function drawer(){
   <div class="sec" style="margin:0"><header><h2>Reference files</h2><span class="sp"></span>${canAdd?`<button class="btn sm" data-a="addfiles" data-id="${j.jo_id}">${ic('plus',14)}Add files</button>`:''}</header>${!D?'<div class="sk"></div>':jfiles.length?jfiles.map(f=>`<div class="fr">${ic('clip',18)}<div class="fn"><b title="${esc(f.file_name)}">${esc(f.file_name)}</b><small>${sz(f.size)} · ${esc(nm(f.uploaded_by))} · ${fdt(f.uploaded_at)}</small></div><button class="btn sm ghost" data-a="dl" data-id="${esc(f.attachment_id)}">Download</button></div>`).join(''):empty('No files attached')}</div>
   <div class="sec" style="margin:0"><header><h2>Activity</h2></header>${!D?'<div class="sk"></div><div class="sk"></div>':D.error?`<div style="padding:14px 18px">${esc(D.error)} <button class="btn sm ghost" data-a="reloaddetail" data-id="${j.jo_id}">Try again</button></div>`:items.length?`<ul class="tl">${items.slice(0,30).map(i=>`<li>${i.h}<small>${fdt(i.t)}</small></li>`).join('')}</ul>`:empty('No activity yet')}</div></div>`;
   document.body.classList.add('dopen');el.scrollTop=scrollTop;gtMountAll(el);
+  if(fk){const g=el.querySelector(`.grip[data-drag="${fk}"]`);if(g)g.focus({preventScroll:true})}
 }
 
 /* ============ timeline (Gantt): target dates against actual completion ============ */
@@ -1120,10 +1172,6 @@ const H={
     onSubmit:()=>{doSignOut();return null}}),
   approve:el=>approveJo(jobOf(el.dataset.id)),reject:el=>rejectJo(jobOf(el.dataset.id)),assign:el=>assignJo(jobOf(el.dataset.id)),
   cancel:el=>cancelJo(jobOf(el.dataset.id)),closejo:el=>closeJo(jobOf(el.dataset.id)),addtask:el=>addTask(jobOf(el.dataset.id)),
-  mvtask:el=>{const t=S.tasks.find(x=>x.task_id===el.dataset.id);if(!t)return;const all=taskOrder(t.jo_id),live=all.filter(x=>x.status!=='Cancelled'),d=+el.dataset.d,from=live.indexOf(t),to=from+d;
-    if(to<0||to>=live.length)return;const other=live[to],ids=all.map(x=>x.task_id),i1=ids.indexOf(t.task_id),i2=ids.indexOf(other.task_id);[ids[i1],ids[i2]]=[ids[i2],ids[i1]];
-    const bak=S.tasks.map(x=>x.sort_order);ids.forEach((id,i)=>{S.tasks.find(x=>x.task_id===id).sort_order=i+1});render();
-    act('reorderTasks',{jo_id:t.jo_id,order:ids},null,1).then(m=>{if(m){S.tasks.forEach((x,i)=>{x.sort_order=bak[i]});render();toast(m,'err')}})},
   canceltask:el=>{const t=S.tasks.find(x=>x.task_id===el.dataset.id);dialog({title:'Cancel task',desc:t.task_name,label:'Cancel task',danger:1,busy:'Cancelling…',cancel:'Keep task',fields:[{k:'reason',l:'Reason',t:'area',rows:3,max:500,req:1,hint:'Why is this task being cancelled? It stays on the request, marked Cancelled, and no longer counts toward progress.'}],onSubmit:v=>act('cancelTask',{task_id:t.task_id,reason:v.reason},'Task cancelled',1)})},
   reinstate:el=>{const t=S.tasks.find(x=>x.task_id===el.dataset.id);dialog({title:'Reinstate task',desc:t.task_name,label:'Reinstate task',busy:'Reinstating…',html:'<p class="dd">The task goes back into the job order and counts toward progress again.</p>',fields:[],onSubmit:()=>act('reinstateTask',{task_id:t.task_id},'Task reinstated',1)})},
   updtask:el=>updTask(S.tasks.find(t=>t.task_id===el.dataset.id)),
