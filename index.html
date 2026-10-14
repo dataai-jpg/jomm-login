@@ -190,6 +190,33 @@ body.dopen #scrim{opacity:1;pointer-events:auto}body.dopen #drawer{transform:non
 .dacts{display:flex;flex-wrap:wrap;gap:8px}
 .tk{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line)}.tk:last-child{border:0}
 
+
+.pgr{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 14px;border-top:1px solid var(--line);font-size:12.5px;color:var(--mut)}
+.pgr b{color:var(--ink);font-weight:600}.pgr .sp{flex:1}.pgs{display:inline-flex;align-items:center;gap:6px}.pgs select{border:1px solid var(--line2);border-radius:8px;padding:4px 6px;background:var(--surface);color:var(--ink);font:inherit;font-size:12.5px;width:auto}
+.pgb{display:inline-flex;align-items:center;gap:4px}.pgn{min-width:30px;height:30px;padding:0 8px;border:1px solid var(--line2);border-radius:8px;background:var(--surface);color:var(--ink);font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;display:inline-grid;place-items:center}
+.pgn:hover:not(:disabled):not(.on){background:var(--surface2)}.pgn.on{background:var(--brand);border-color:var(--brand);color:var(--on-brand)}.pgn:disabled{opacity:.4;cursor:default}.pgn:focus-visible{outline:2px solid var(--brand);outline-offset:1px}.pgd{color:var(--mut);padding:0 2px}
+.colmore{width:100%;justify-content:center;margin-top:6px}.colmore small{color:var(--mut)}
+@media(max-width:620px){.pgr{justify-content:center}.pgr .sp{display:none}.pgi{width:100%;text-align:center}}
+
+.btn.ico{padding:5px 8px}.hint{display:inline-flex;align-items:center;gap:3px;color:var(--mut)}.lk{margin-left:auto;border:0;background:none;color:var(--brand);font:inherit;font-size:12px;font-weight:600;cursor:pointer;padding:0 0 0 8px}.lk:hover{text-decoration:underline}
+.orig{display:block;color:var(--mut);font-size:11.5px;margin-top:2px}
+#dx[hidden]{display:none}
+dialog.wide{width:min(640px,calc(100vw - 24px))}
+.tdv{display:grid;gap:10px;padding:2px 22px 0}.tdv-a{padding:0 22px}.tdv h3{margin:6px 0 0;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);font-weight:700}
+.tdv-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.tdv-jo{color:var(--brand);font-weight:600;font-size:13px;text-decoration:none;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}.tdv-jo:hover{text-decoration:underline}
+.tdv-g{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;margin:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--line)}
+.tdv-g>div{background:var(--surface);padding:10px 14px;min-width:0}.tdv-g dt{font-size:12px;color:var(--mut);margin-bottom:3px}.tdv-g dd{margin:0;display:flex;align-items:center;gap:8px;font-weight:600;min-width:0}.tdv-g dd.over{color:var(--bad)}.tdv-g dd .dn{flex:none}
+.tdv-x{margin:0;padding:8px 12px;border-radius:10px;background:color-mix(in srgb,var(--bad) 10%,transparent);font-size:13px}
+.tdv .td{white-space:pre-wrap;word-break:break-word;font-size:13.5px;line-height:1.55;background:var(--surface2);border-radius:10px;padding:10px 12px;margin:0}.tdv-none{margin:0;color:var(--mut);font-size:13px}
+.tdv-a{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 2px}
+.tr{cursor:pointer}.tr:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+.gr.tk2.go:focus-visible{outline:2px solid var(--brand);outline-offset:-2px}
+@media(max-width:520px){.tdv-g{grid-template-columns:1fr}}
+
+.pgrp{border-bottom:1px solid var(--line)}.pgrp:last-of-type{border-bottom:0}.pgrp>summary{display:flex;align-items:center;gap:10px;padding:10px 18px;cursor:pointer;list-style:none;background:var(--surface2)}.pgrp>summary::-webkit-details-marker{display:none}
+.pgrp>summary::before{content:"▸";color:var(--mut);transition:transform .15s;font-size:12px}.pgrp[open]>summary::before{transform:rotate(90deg)}.pgrp>summary .who{display:inline-flex;align-items:center;gap:8px}.pgrp>summary .sp{flex:1}
+.rw-side .dn{width:34px;height:34px}.rw-side .dn svg{width:34px;height:34px}
+@media(max-width:760px){dialog.wide{width:100vw}}
 .tlist{list-style:none;margin:0;padding:4px 8px 6px}
 .tr{display:grid;grid-template-columns:30px minmax(0,1fr) auto auto;grid-template-areas:"o n p a" "o m p a" "o d d d";align-items:center;column-gap:10px;row-gap:1px;padding:6px 8px;border-radius:10px;border-bottom:1px solid var(--line)}
 .tr:last-child{border-bottom:0}.tr:hover{background:color-mix(in srgb,var(--brand) 4%,transparent)}.tr.cx{opacity:.7}.tr.cx .tr-n b{text-decoration:line-through}
@@ -400,12 +427,12 @@ dialog textarea{max-height:40vh}
 <script>
 /* ============ state & helpers ============ */
 let S=null;
-const ui={page:'dash',q:'',st:'',pr:'',view:innerWidth<760?'list':'board',jo:null,pending:0,log:null,detail:{},dl:{},tok:null,exp:0};
+const ui={pg:{},ps:{jos:15,users:15,log:25,tl:5,dash:5,mine:6,team:5,rev:6,lead:6},cm:{},gc:{},page:'dash',q:'',st:'',pr:'',view:innerWidth<760?'list':'board',jo:null,pending:0,log:null,detail:{},dl:{},tok:null,exp:0};
 const $=(s,r=document)=>r.querySelector(s);
 const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const msgOf=e=>String(e&&e.message||e||'').replace(/^Error:\s*/,'');
 const P={
- plus:'<path d="M12 5v14M5 12h14"/>',search:'<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>',
+ left:'<path d="m15 18-6-6 6-6"/>',right:'<path d="m9 18 6-6-6-6"/>',cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/>',plus:'<path d="M12 5v14M5 12h14"/>',search:'<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>',
  grid:'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>',
  clip:'<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/>',
  users:'<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>',
@@ -510,6 +537,24 @@ function toast(m,type){
   setTimeout(()=>t.remove(),type==='err'?7000:4000);
 }
 
+
+/* ============ pagination ============ */
+const PAGE_SIZES=[10,15,25,50];
+function pageOf(key,total){const size=ui.ps[key]||15,pages=Math.max(1,Math.ceil(total/size));const p=Math.min(Math.max(1,ui.pg[key]||1),pages);ui.pg[key]=p;return {key,p,size,pages,total,from:(p-1)*size,to:Math.min(total,p*size)}}
+function pager(g){
+  if(g.total<=Math.min(g.size,PAGE_SIZES[0]))return '';
+  const pg=[];const add=n=>{if(pg.indexOf(n)<0&&n>=1&&n<=g.pages)pg.push(n)};[1,g.p-1,g.p,g.p+1,g.pages].forEach(add);pg.sort((a,b)=>a-b);
+  let nums='',last=0;pg.forEach(n=>{if(n-last>1)nums+='<span class="pgd" aria-hidden="true">…</span>';nums+=`<button type="button" class="pgn${n===g.p?' on':''}" data-a="pgo" data-k="${g.key}" data-p="${n}"${n===g.p?' aria-current="page"':''} aria-label="Page ${n}">${n}</button>`;last=n});
+  const sizes=PAGE_SIZES.concat(PAGE_SIZES.indexOf(g.size)<0?[g.size]:[]).sort((a,b)=>a-b);
+  return `<nav class="pgr" aria-label="Pagination"><span class="pgi">Showing <b>${g.total?g.from+1:0}–${g.to}</b> of <b>${g.total}</b></span><span class="sp"></span><label class="pgs">Rows<select data-pgs="${g.key}" aria-label="Rows per page">${sizes.map(n=>`<option${n===g.size?' selected':''}>${n}</option>`).join('')}</select></label><div class="pgb"><button type="button" class="pgn" data-a="pgo" data-k="${g.key}" data-p="${g.p-1}" aria-label="Previous page"${g.p<=1?' disabled':''}>${ic('left',16)}</button>${nums}<button type="button" class="pgn" data-a="pgo" data-k="${g.key}" data-p="${g.p+1}" aria-label="Next page"${g.p>=g.pages?' disabled':''}>${ic('right',16)}</button></div></nav>`;
+}
+/* Redraws only the part of the page a pager belongs to. */
+function pgRefresh(k){
+  if(k==='jos'&&$('#res')){$('#res').innerHTML=results();return}
+  if(k==='tl'){gtRefresh();return}
+  render();
+}
+
 /* ============ dialogs (forms and confirmations) ============ */
 let dlgBusy=false;
 function optsHtml(list,v,ph){
@@ -535,7 +580,7 @@ function showErr(m){const e=$('#derr');if(e){e.textContent=m;e.hidden=false}}
 /* o: {title, desc, fields, label, danger, onSubmit(values) -> null | error message, after(dialog)} */
 function dialog(o){
   const d=$('#dlg'),fs=o.fields||[];dlgWord=o.busy||'Working…';
-  d.innerHTML=`<form id="df" novalidate><div class="dh"><h2>${esc(o.title)}</h2><button type="button" class="ib" id="dxx" aria-label="Close">${ic('x')}</button></div>${o.desc?`<p class="dd">${esc(o.desc)}</p>`:''}${o.html||''}<div class="derr" id="derr" role="alert" hidden></div><div class="dfs">${fs.map(field).join('')}${o.html2||''}</div><div class="dfoot"><button type="button" class="btn ghost" id="dx">${esc(o.cancel||'Cancel')}</button><button class="btn${o.danger?' danger':''}" id="dok" data-l="${esc(o.label||'Save')}"><span class="spin" aria-hidden="true"></span><span class="bl">${esc(o.label||'Save')}</span></button></div></form>`;
+  d.classList.toggle('wide',!!o.wide);d.innerHTML=`<form id="df" novalidate><div class="dh"><h2>${esc(o.title)}</h2><button type="button" class="ib" id="dxx" aria-label="Close">${ic('x')}</button></div>${o.desc?`<p class="dd">${esc(o.desc)}</p>`:''}${o.html||''}<div class="derr" id="derr" role="alert" hidden></div><div class="dfs">${fs.map(field).join('')}${o.html2||''}</div><div class="dfoot"><button type="button" class="btn ghost" id="dx"${o.single?' hidden':''}>${esc(o.cancel||'Cancel')}</button><button class="btn${o.danger?' danger':''}" id="dok" data-l="${esc(o.label||'Save')}"><span class="spin" aria-hidden="true"></span><span class="bl">${esc(o.label||'Save')}</span></button></div></form>`;
   const close=()=>{if(!dlgBusy)d.close()};
   $('#dx').onclick=close;$('#dxx').onclick=close;d.oncancel=e=>{if(dlgBusy)e.preventDefault()};
   $('#df').onsubmit=async e=>{
@@ -805,6 +850,23 @@ function trend(){
       +`<text x="${x+bw}" y="158" text-anchor="middle" font-size="11" fill="var(--mut)">${d.toLocaleDateString(undefined,{month:'short',day:'numeric'})}</text>`}).join('');
   return `<div class="sec"><header><h2>Last 8 weeks</h2></header><div class="legend"><span><i style="background:var(--prog)"></i>Requested</span><span><i style="background:var(--done)"></i>Completed</span></div><div class="tw"><svg viewBox="0 0 ${W*gw+8} 166" width="100%" role="img" aria-label="Requests and completions per week, last 8 weeks. Requested: ${rq.join(', ')}. Completed: ${cp.join(', ')}.">${bars}<line x1="0" x2="${W*gw+8}" y1="140" y2="140" stroke="var(--line2)"/></svg></div></div>`;
 }
+
+/* ============ open tasks on the dashboard ============ */
+const openT=t=>t.status!=='Completed'&&t.status!=='Cancelled'&&ACTIVE.indexOf((jobOf(t.jo_id)||{}).status)>=0;
+const byDue=(a,b)=>String(a.due_date||'9').localeCompare(String(b.due_date||'9'));
+function dTask(t){
+  const j=jobOf(t.jo_id)||{},can=canManage(j)||t.assigned_to===S.me.email;
+  return `<div class="rw" role="button" tabindex="0" data-a="taskopen" data-id="${t.task_id}"><div class="rw-main"><b>${esc(t.task_name)}</b><span class="sub"><em>${esc(j.jo_number)}</em><span>${esc(j.title)}</span><span class="${taskOver(t)?'over':''}">${t.due_date?'Due '+fd(t.due_date):'No due date'}</span></span></div><div class="rw-side">${donut(t.progress)}${can?`<button class="btn sm" data-a="updtask" data-id="${t.task_id}">Update</button>`:''}</div></div>`;
+}
+/* Not-completed tasks grouped by the person they are assigned to. People with overdue work come first. */
+function openByPerson(tasks,key,title,none){
+  const g={};tasks.forEach(t=>{(g[t.assigned_to]=g[t.assigned_to]||[]).push(t)});
+  const ppl=Object.keys(g).map(e=>({e,list:g[e].sort(byDue),over:g[e].filter(taskOver).length})).sort((a,b)=>(b.over-a.over)||(b.list.length-a.list.length)||nm(a.e).localeCompare(nm(b.e)));
+  const G=pageOf(key,ppl.length);
+  const body=ppl.slice(G.from,G.to).map((p,i)=>{const k=key+p.e,open=ui.gc[k]!==undefined?ui.gc[k]:(G.from+i)<2;
+    return `<details class="pgrp" data-gk="${esc(k)}"${open?' open':''}><summary><span class="who">${av(p.e)}<b>${esc(nm(p.e))}</b></span><span class="sp"></span>${p.over?`<span class="chip c-bad"><i></i>${p.over} overdue</span>`:''}<span class="chip c-pen"><i></i>${p.list.length} open</span></summary>${p.list.map(dTask).join('')}</details>`}).join('');
+  return `<div class="sec"><header><h2>${title}</h2><span class="sp"></span><small>${tasks.length} task${tasks.length===1?'':'s'} · ${ppl.length} ${ppl.length===1?'person':'people'}</small></header>${ppl.length?body+pager(G):empty(none[0],none[1])}</div>`;
+}
 function dash(){
   const m=S.me,J=S.jos,T=S.tasks,cnt=s=>J.filter(j=>j.status===s).length;
   const act_=J.filter(j=>j.status==='Pending'||j.status==='In Progress'),over=J.filter(isOver);
@@ -817,18 +879,23 @@ function dash(){
   let left='',right='';
   if(m.staff){
     const wait=sorted(J.filter(j=>j.status==='Submitted'));
-    left+=`<div class="sec"><header><h2>Awaiting your review</h2><span class="sp"></span><small>${wait.length}</small></header>${wait.length?wait.map(j=>rowJo(j,`<div class="acts"><button class="btn sm" data-a="approve" data-id="${j.jo_id}">Approve</button><button class="btn sm ghost" data-a="reject" data-id="${j.jo_id}">Reject</button></div>`)).join(''):empty('All caught up','New requests appear here.')}</div>`;
+    const RG=pageOf('rev',wait.length);
+    left+=`<div class="sec"><header><h2>Awaiting your review</h2><span class="sp"></span><small>${wait.length}</small></header>${wait.length?wait.slice(RG.from,RG.to).map(j=>rowJo(j,`<div class="acts"><button class="btn sm" data-a="approve" data-id="${j.jo_id}">Approve</button><button class="btn sm ghost" data-a="reject" data-id="${j.jo_id}">Reject</button></div>`)).join('')+pager(RG):empty('All caught up','New requests appear here.')}</div>`;
     if(over.length)left+=`<div class="sec"><header><h2>Overdue</h2><span class="sp"></span><small>${over.length}</small></header>${over.slice(0,6).map(j=>rowJo(j)).join('')}</div>`;
+    left+=openByPerson(T.filter(openT),'dash','Open tasks by person',['No open tasks','Every task is completed or cancelled.']);
     const devs=devList(),groups=S.teams.map(t=>[t.team_id,t.team_name]).concat([['','No team']]);
     const rows=groups.map(([id,name])=>{const mem=devs.filter(u=>(u.team_id||'')===id);if(!mem.length&&!id)return '';const emails=mem.map(u=>u.email),a=act_.filter(j=>emails.indexOf(j.assigned_developer)>=0);
       return `<tr><td class="first" data-label="Team"><b>${esc(name)}</b></td><td data-label="Developers">${mem.length}</td><td data-label="Active job orders">${a.length}</td><td data-label="Open tasks">${T.filter(t=>t.status!=='Completed'&&t.status!=='Cancelled'&&emails.indexOf(t.assigned_to)>=0).length}</td><td data-label="Progress">${a.length?pbar(Math.round(a.reduce((s,j)=>s+j.progress,0)/a.length)):'–'}</td></tr>`}).join('');
     right+=`<div class="sec"><header><h2>Team workload</h2></header>${rows?`<table class="rt"><thead><tr><th>Team</th><th>Devs</th><th>Active</th><th>Tasks</th><th>Progress</th></tr></thead><tbody>${rows}</tbody></table>`:empty('No teams yet','Add teams and developers under Teams and Users.')}</div>`;
   }
   if(m.role==='Developer'){
-    const mine=T.filter(t=>t.assigned_to===m.email&&t.status!=='Completed'&&t.status!=='Cancelled'&&ACTIVE.indexOf((jobOf(t.jo_id)||{}).status)>=0).sort((a,b)=>String(a.due_date||'9').localeCompare(String(b.due_date||'9')));
-    left+=`<div class="sec"><header><h2>My open tasks</h2><span class="sp"></span><small>${mine.length}</small></header>${mine.length?mine.map(t=>{const j=jobOf(t.jo_id);return `<div class="rw" role="button" tabindex="0" data-a="open" data-id="${j.jo_id}"><div class="rw-main"><b>${esc(t.task_name)}</b><span class="sub"><em>${esc(j.jo_number)}</em><span>${esc(j.title)}</span>${t.due_date?`<span class="${taskOver(t)?'over':''}">Due ${fd(t.due_date)}</span>`:''}</span></div><div class="rw-side">${pbar(t.progress)}<button class="btn sm" data-a="updtask" data-id="${t.task_id}">Update</button></div></div>`}).join(''):empty('No open tasks','Tasks assigned to you show up here.')}</div>`;
+    const mine=T.filter(t=>t.assigned_to===m.email&&openT(t)).sort(byDue),MG=pageOf('mine',mine.length);
+    left+=`<div class="sec"><header><h2>My open tasks</h2><span class="sp"></span><small>${mine.length}${mine.filter(taskOver).length?` · ${mine.filter(taskOver).length} overdue`:''}</small></header>${mine.length?mine.slice(MG.from,MG.to).map(dTask).join('')+pager(MG):empty('No open tasks','Tasks assigned to you show up here.')}</div>`;
+    const others=T.filter(t=>t.assigned_to!==m.email&&openT(t)&&leads(jobOf(t.jo_id)||{}));
+    if(others.length)left+=openByPerson(others,'team','Open tasks in my job orders',['','']);
     const lead=sorted(J.filter(j=>leads(j)&&DONE_S.indexOf(j.status)<0));
-    left+=`<div class="sec"><header><h2>Assigned to me</h2><span class="sp"></span><small>${lead.length}</small></header>${lead.length?lead.map(j=>rowJo(j,`<div class="rw-side">${chip(j.status)}${pbar(j.progress)}</div>`)).join(''):empty('Nothing assigned yet','A manager assigns job orders to you.')}</div>`;
+    const LD=pageOf('lead',lead.length);
+    left+=`<div class="sec"><header><h2>Assigned to me</h2><span class="sp"></span><small>${lead.length}</small></header>${lead.length?lead.slice(LD.from,LD.to).map(j=>rowJo(j,`<div class="rw-side">${chip(j.status)}${pbar(j.progress)}</div>`)).join('')+pager(LD):empty('Nothing assigned yet','A manager assigns job orders to you.')}</div>`;
   }
   if(m.role==='Requestor'){
     const my=sorted(J.filter(j=>j.requested_by===m.email)).slice(0,8);
@@ -851,9 +918,10 @@ function results(){
   if(ui.view==='board'){
     const cols=[['Submitted','Awaiting review'],['Pending','Pending'],['In Progress','In progress'],['Completed','Completed'],['Closed','Closed'],['X','Rejected or cancelled']];
     return `<div class="board">${cols.map(([k,l])=>{const c=L.filter(j=>k==='X'?(j.status==='Rejected'||j.status==='Cancelled'):j.status===k);
-      return `<section class="col" aria-label="${l}"><header><span class="chip c-${k==='X'?'bad':scls(k)}"><i></i>${l}</span><span class="n">${c.length}</span></header>${c.map(card).join('')||'<div class="empty" style="padding:14px">None</div>'}</section>`}).join('')}</div>`;
+      const lim=ui.cm[k]||8,more=c.length-lim;return `<section class="col" aria-label="${l}"><header><span class="chip c-${k==='X'?'bad':scls(k)}"><i></i>${l}</span><span class="n">${c.length}</span></header>${c.slice(0,lim).map(card).join('')||'<div class="empty" style="padding:14px">None</div>'}${more>0?`<button type="button" class="btn sm ghost colmore" data-a="colmore" data-k="${k}">Show ${Math.min(8,more)} more <small>(${more} left)</small></button>`:''}</section>`}).join('')}</div>`;
   }
-  return `<div class="panel"><table class="rt"><thead><tr><th>Job order</th><th>Requested by</th><th>Developer</th><th>Priority</th><th>Target</th><th>Status</th><th>Progress</th></tr></thead><tbody>${L.map(j=>`<tr class="k" tabindex="0" data-a="open" data-id="${j.jo_id}"><td class="first"><b>${esc(j.title)}</b><small style="color:var(--mut)">${esc(j.jo_number)} &nbsp; ${esc(j.service_type)}</small></td><td data-label="Requested by"><span class="who">${av(j.requested_by)}${esc(nm(j.requested_by))}</span></td><td data-label="Developer"><span class="who">${av(j.assigned_developer)}${j.assigned_developer?esc(nm(j.assigned_developer)):'Unassigned'}</span></td><td data-label="Priority"><span class="tag p-${esc(String(j.priority).toLowerCase())}">${esc(j.priority)}</span></td><td data-label="Target" class="${isOver(j)?'over':''}">${fd(j.target_date)}</td><td data-label="Status">${chip(j.status)}</td><td data-label="Progress" style="min-width:150px">${pbar(j.progress)}</td></tr>`).join('')}</tbody></table></div>`;
+  const G=pageOf('jos',L.length),PL=L.slice(G.from,G.to);
+  return `<div class="panel"><table class="rt"><thead><tr><th>Job order</th><th>Requested by</th><th>Developer</th><th>Priority</th><th>Target</th><th>Status</th><th>Progress</th></tr></thead><tbody>${PL.map(j=>`<tr class="k" tabindex="0" data-a="open" data-id="${j.jo_id}"><td class="first"><b>${esc(j.title)}</b><small style="color:var(--mut)">${esc(j.jo_number)} &nbsp; ${esc(j.service_type)}</small></td><td data-label="Requested by"><span class="who">${av(j.requested_by)}${esc(nm(j.requested_by))}</span></td><td data-label="Developer"><span class="who">${av(j.assigned_developer)}${j.assigned_developer?esc(nm(j.assigned_developer)):'Unassigned'}</span></td><td data-label="Priority"><span class="tag p-${esc(String(j.priority).toLowerCase())}">${esc(j.priority)}</span></td><td data-label="Target" class="${isOver(j)?'over':''}">${fd(j.target_date)}</td><td data-label="Status">${chip(j.status)}</td><td data-label="Progress" style="min-width:150px">${pbar(j.progress)}</td></tr>`).join('')}</tbody></table>${pager(G)}</div>`;
 }
 function jos(){
   return `<div class="tool"><div class="search">${ic('search')}<input id="q" type="search" placeholder="Search by number, title or person" value="${esc(ui.q)}" aria-label="Search job orders"></div><select id="pr" aria-label="Priority"><option value="">Any priority</option>${S.lists.priorities.map(p=>`<option${ui.pr===p?' selected':''}>${p}</option>`).join('')}</select><div class="tog" role="group" aria-label="View"><button data-a="view" data-v="board" class="${ui.view==='board'?'on':''}">${ic('board',16)}Board</button><button data-a="view" data-v="list" class="${ui.view==='list'?'on':''}">${ic('list',16)}List</button></div></div>
@@ -861,8 +929,8 @@ function jos(){
 }
 function users(){
   const me=S.me,canEdit=u=>u.email!==me.email&&(me.super||u.role==='Developer'||u.role==='Requestor');
-  const rows=S.users.slice().sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''))).map(u=>`<tr><td class="first"><span class="who">${av(u.email,'lg')}<span><b>${esc(u.name)}</b><small>${esc(u.email)}</small></span></span></td><td data-label="Role">${esc(u.role)}</td><td data-label="Status"><span class="chip c-${u.account_status==='Active'?'done':u.account_status==='Locked'?'bad':'pen'}"><i></i>${esc(u.account_status)}</span></td><td data-label="Team">${esc(tm(u.team_id))}</td><td data-label="Last sign-in">${fdt(u.last_login)}</td><td>${canEdit(u)?`<button class="btn sm ghost" data-a="edituser" data-id="${esc(u.email)}">Edit</button>`:''}</td></tr>`).join('');
-  return `<div class="tool"><div style="flex:1"></div><button class="btn" data-a="adduser">${ic('plus',16)}Add user</button></div><div class="panel"><table class="rt"><thead><tr><th>User</th><th>Role</th><th>Status</th><th>Team</th><th>Last sign-in</th><th></th></tr></thead><tbody>${rows}</tbody></table></div><p style="color:var(--mut);margin-top:12px">Only people listed here can sign in.${me.super?'':' Managers can add and edit Developers and Requestors.'}</p>`;
+  const UL=S.users.slice().sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''))),UG=pageOf('users',UL.length),rows=UL.slice(UG.from,UG.to).map(u=>`<tr><td class="first"><span class="who">${av(u.email,'lg')}<span><b>${esc(u.name)}</b><small>${esc(u.email)}</small></span></span></td><td data-label="Role">${esc(u.role)}</td><td data-label="Status"><span class="chip c-${u.account_status==='Active'?'done':u.account_status==='Locked'?'bad':'pen'}"><i></i>${esc(u.account_status)}</span></td><td data-label="Team">${esc(tm(u.team_id))}</td><td data-label="Last sign-in">${fdt(u.last_login)}</td><td>${canEdit(u)?`<button class="btn sm ghost" data-a="edituser" data-id="${esc(u.email)}">Edit</button>`:''}</td></tr>`).join('');
+  return `<div class="tool"><div style="flex:1"></div><button class="btn" data-a="adduser">${ic('plus',16)}Add user</button></div><div class="panel"><table class="rt"><thead><tr><th>User</th><th>Role</th><th>Status</th><th>Team</th><th>Last sign-in</th><th></th></tr></thead><tbody>${rows}</tbody></table>${pager(UG)}</div><p style="color:var(--mut);margin-top:12px">Only people listed here can sign in.${me.super?'':' Managers can add and edit Developers and Requestors.'}</p>`;
 }
 function teams(){
   const act_=S.jos.filter(j=>j.status==='Pending'||j.status==='In Progress');
@@ -870,7 +938,8 @@ function teams(){
 }
 function logPage(){
   if(!ui.log)return `<div class="panel"><div class="sk"></div><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>`;
-  return `<div class="panel"><table class="rt"><thead><tr><th>When</th><th>Account</th><th>Event</th><th>Detail</th></tr></thead><tbody>${ui.log.map(l=>`<tr><td class="first">${fdt(l.logged_at)}</td><td data-label="Account">${esc(l.email||'–')}</td><td data-label="Event"><b>${esc(String(l.event).replace(/_/g,' ').toLowerCase())}</b></td><td data-label="Detail">${esc(l.detail)}</td></tr>`).join('')||`<tr><td colspan="4">${empty('No events yet')}</td></tr>`}</tbody></table></div>`;
+  const LG=pageOf('log',ui.log.length);
+  return `<div class="panel"><table class="rt"><thead><tr><th>When</th><th>Account</th><th>Event</th><th>Detail</th></tr></thead><tbody>${ui.log.slice(LG.from,LG.to).map(l=>`<tr><td class="first">${fdt(l.logged_at)}</td><td data-label="Account">${esc(l.email||'–')}</td><td data-label="Event"><b>${esc(String(l.event).replace(/_/g,' ').toLowerCase())}</b></td><td data-label="Detail">${esc(l.detail)}</td></tr>`).join('')||`<tr><td colspan="4">${empty('No events yet')}</td></tr>`}</tbody></table>${pager(LG)}</div>`;
 }
 async function loadLog(){
   ui.log=null;render();
@@ -879,6 +948,7 @@ async function loadLog(){
 }
 
 /* ============ drawer ============ */
+const fileChip=f=>`<button class="btn sm ghost" data-a="dl" data-id="${esc(f.attachment_id)}" title="${esc(f.file_name)} (${sz(f.size)})">${ic('clip',14)}<span style="overflow:hidden;text-overflow:ellipsis">${esc(f.file_name)}</span></button>`;
 const GRIP='<svg width="14" height="18" viewBox="0 0 14 18" fill="currentColor" aria-hidden="true"><circle cx="4" cy="3" r="1.6"/><circle cx="10" cy="3" r="1.6"/><circle cx="4" cy="9" r="1.6"/><circle cx="10" cy="9" r="1.6"/><circle cx="4" cy="15" r="1.6"/><circle cx="10" cy="15" r="1.6"/></svg>',MV_UP='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg>',MV_DN='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
 const donut=p=>{p=Math.max(0,Math.min(100,+p||0));const r=14,c=2*Math.PI*r,k=p>=100?'done':p>0?'prog':'pen';return `<span class="dn" role="img" aria-label="${p}% complete" title="${p}% complete"><svg width="38" height="38" viewBox="0 0 38 38" aria-hidden="true"><circle cx="19" cy="19" r="${r}" class="dn-t"/><circle cx="19" cy="19" r="${r}" class="dn-v c-${k}" stroke-dasharray="${(c*p/100).toFixed(2)} ${c.toFixed(2)}" transform="rotate(-90 19 19)"/></svg><b>${p}</b></span>`};
 
@@ -922,6 +992,8 @@ function endDrag(e,cancel){
   const ids=d.rows.map(r=>r.querySelector('.grip').dataset.drag);const [x]=ids.splice(d.from,1);ids.splice(d.to,0,x);
   const t=S.tasks.find(t=>t.task_id===x);if(t)applyTaskOrder(t.jo_id,ids);
 }
+document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('.grip'))e.stopPropagation()},true);
+document.addEventListener('toggle',e=>{const d=e.target;if(d&&d.dataset&&d.dataset.gk)ui.gc[d.dataset.gk]=d.open},true);
 document.addEventListener('pointerup',e=>endDrag(e,false));
 document.addEventListener('pointercancel',e=>endDrag(e,true));
 document.addEventListener('keydown',e=>{
@@ -945,7 +1017,7 @@ function drawer(){
     (staff()||(j.requested_by===me.email&&j.status==='Submitted'))&&['Closed','Cancelled','Rejected'].indexOf(j.status)<0?`<button class="btn ghost" data-a="cancel" data-id="${j.jo_id}">Cancel request</button>`:''
   ].join('');
   const D=ui.detail[j.jo_id];if(!D&&!ui.dl[j.jo_id])loadDetail(j.jo_id);
-  const fchip=f=>`<button class="btn sm ghost" data-a="dl" data-id="${esc(f.attachment_id)}" title="${esc(f.file_name)} (${sz(f.size)})">${ic('clip',14)}<span style="overflow:hidden;text-overflow:ellipsis">${esc(f.file_name)}</span></button>`;
+  const fchip=fileChip;
   const jfiles=D?D.files.filter(f=>!f.task_id):[],canAdd=(j.requested_by===me.email||mg)&&['Closed','Cancelled','Rejected'].indexOf(j.status)<0;
   const items=[];
   (D?D.history:[]).filter(h=>h.jo_id===j.jo_id).forEach(h=>items.push({t:h.changed_at,h:`<b>${esc(nm(h.changed_by))}</b> ${h.from_status===h.to_status?esc(h.note||'updated the request'):h.from_status?'moved this to '+esc(slabel(h.to_status)):'submitted the request'}${h.from_status!==h.to_status&&h.note?`<small>${esc(h.note)}</small>`:''}`}));
@@ -956,18 +1028,17 @@ function drawer(){
   <div class="dr-b"><h2>${esc(j.title)}</h2>
   ${cur!==undefined?`<div class="stages">${stg.map((s,i)=>`<div class="${i<cur?'done':i===cur?'cur':''}">${s[0]}<br><span style="font-weight:400">${i===cur?s[1]:''}</span></div>`).join('')}</div>`:`<div class="note"><b>${esc(slabel(j.status))}.</b> ${esc(j.review_note||'')}</div>`}
   ${j.description?`<p style="white-space:pre-wrap">${esc(j.description)}</p>`:''}
-  <div class="facts"><div><span>Requested by</span><b>${av(j.requested_by)}${esc(nm(j.requested_by))}</b></div><div><span>Priority</span><b>${esc(j.priority)}</b></div><div><span>Target date</span><b class="${isOver(j)?'over':''}">${fd(j.target_date)}</b></div><div><span>Developer</span><b>${av(j.assigned_developer)}${j.assigned_developer?esc(nm(j.assigned_developer)):'Not assigned'}</b></div>
+  <div class="facts"><div><span>Requested by</span><b>${av(j.requested_by)}${esc(nm(j.requested_by))}</b></div><div><span>Priority</span><b>${esc(j.priority)}</b></div><div><span>Target date</span><b class="${isOver(j)?'over':''}">${fd(j.target_date)}${staff()&&(ACTIVE.indexOf(j.status)>=0||j.status==='Submitted')?`<button type="button" class="lk" data-a="resjo" data-id="${j.jo_id}">Change</button>`:''}</b>${j.original_target_date&&j.original_target_date!==j.target_date?`<small class="orig">Originally ${fd(j.original_target_date)}</small>`:''}</div><div><span>Developer</span><b>${av(j.assigned_developer)}${j.assigned_developer?esc(nm(j.assigned_developer)):'Not assigned'}</b></div>
   <div><span>Team</span><b>${esc(tm(j.developer_team))}</b></div><div><span>Review time</span><b>${dur(gap(j.requested_at,j.reviewed_at))}</b></div><div><span>Execution time</span><b>${dur(gap(j.work_started_at,j.completed_at))}</b></div><div><span>Total turnaround</span><b>${j.closed_at?dur(gap(j.requested_at,j.closed_at)):'Open'}</b></div></div>
   <div><div style="display:flex;justify-content:space-between;margin-bottom:6px"><b>Progress</b><span style="color:var(--mut)">${T.length?'Average of '+T.length+' task'+(T.length===1?'':'s'):'Starts when tasks are added'}</span></div>${pbar(j.progress)}</div>
   ${acts?`<div class="dacts">${acts}</div>`:''}
   ${(active||T.length)?`<div class="sec" style="margin:0"><header><h2>Tasks</h2><span class="sp"></span>${mg&&active?`<button class="btn sm" data-a="addtask" data-id="${j.jo_id}">${ic('plus',14)}Add task</button>`:''}</header>${T.length?`<ul class="tlist">${TO.map((t,ix)=>{const cx=t.status==='Cancelled',tf=D?D.files.filter(f=>f.task_id===t.task_id):[],can=active&&!cx&&(mg||t.assigned_to===me.email),live=TO.filter(x=>x.status!=='Cancelled'),lp=live.indexOf(t),mv=active&&mg&&!cx&&live.length>1;
     const ty=t.task_type==='Others'&&t.task_type_other?'Others: '+t.task_type_other:t.task_type;
-    return `<li class="tr${cx?' cx':''}"><div class="tr-o">${mv?`<button type="button" class="grip" data-drag="${t.task_id}" aria-label="Reorder ${esc(t.task_name)}. Drag, or press the up and down arrow keys." title="Drag to reorder">${GRIP}</button><span class="no">${ix+1}</span>`:`<span class="no">${ix+1}</span>`}</div>
+    return `<li class="tr${cx?' cx':''}" data-a="taskopen" data-id="${t.task_id}" role="button" tabindex="0" title="View task details"><div class="tr-o">${mv?`<button type="button" class="grip" data-drag="${t.task_id}" aria-label="Reorder ${esc(t.task_name)}. Drag, or press the up and down arrow keys." title="Drag to reorder">${GRIP}</button><span class="no">${ix+1}</span>`:`<span class="no">${ix+1}</span>`}</div>
     <div class="tr-n"><b title="${esc(t.task_name)}">${esc(t.task_name)}</b><span class="tr-ty">${esc(ty)}</span></div>
-    <div class="tr-m">${chip(t.status)}<span class="who">${av(t.assigned_to)}${esc(nm(t.assigned_to))}</span><span class="due${taskOver(t)?' over':''}">${ic('clock',13)}${t.due_date?fd(t.due_date):'No due date'}</span>${cx&&t.cancel_reason?`<span class="tr-x" title="${esc(t.cancel_reason)}">${esc(t.cancel_reason)}</span>`:''}${t.description?`<details class="tdd"><summary>Details</summary><div class="td">${esc(t.description)}</div></details>`:''}</div>
+    <div class="tr-m">${chip(t.status)}<span class="who">${av(t.assigned_to)}${esc(nm(t.assigned_to))}</span><span class="due${taskOver(t)?' over':''}">${ic('clock',13)}${t.due_date?fd(t.due_date):'No due date'}</span>${cx&&t.cancel_reason?`<span class="tr-x" title="${esc(t.cancel_reason)}">${esc(t.cancel_reason)}</span>`:''}${t.description?`<span class="hint" title="Has a description">${ic('list',13)}</span>`:''}${tf.length?`<span class="hint" title="${tf.length} file${tf.length===1?'':'s'} attached">${ic('clip',13)}${tf.length}</span>`:''}</div>
     <div class="tr-p">${cx?'<span class="dn none" title="Cancelled">–</span>':donut(t.progress)}</div>
-    ${can||(active&&mg)?`<div class="tr-a">${can?`<button class="btn sm ghost" data-a="updtask" data-id="${t.task_id}">Update</button>`:''}${active&&mg?(cx?`<button class="btn sm ghost" data-a="reinstate" data-id="${t.task_id}">Reinstate</button>`:`<button class="btn sm ghost" data-a="canceltask" data-id="${t.task_id}">Cancel</button>`):''}</div>`:''}
-    ${tf.length?`<div class="tr-d"><div class="fchips">${tf.map(fchip).join('')}</div></div>`:''}</li>`}).join('')}</ul>`:empty('No tasks yet',mg?'Break this job order into tasks and give them to developers.':'The assigned developer adds tasks.')}</div>`:''}
+    ${can||(active&&mg)?`<div class="tr-a">${can?`<button class="btn sm ghost ico" data-a="restask" data-id="${t.task_id}" title="Change due date" aria-label="Change due date for ${esc(t.task_name)}">${ic('cal',15)}</button><button class="btn sm ghost" data-a="updtask" data-id="${t.task_id}">Update</button>`:''}${active&&mg?(cx?`<button class="btn sm ghost" data-a="reinstate" data-id="${t.task_id}">Reinstate</button>`:`<button class="btn sm ghost" data-a="canceltask" data-id="${t.task_id}">Cancel</button>`):''}</div>`:''}</li>`}).join('')}</ul>`:empty('No tasks yet',mg?'Break this job order into tasks and give them to developers.':'The assigned developer adds tasks.')}</div>`:''}
   <div class="sec" style="margin:0"><header><h2>Reference files</h2><span class="sp"></span>${canAdd?`<button class="btn sm" data-a="addfiles" data-id="${j.jo_id}">${ic('plus',14)}Add files</button>`:''}</header>${!D?'<div class="sk"></div>':jfiles.length?jfiles.map(f=>`<div class="fr">${ic('clip',18)}<div class="fn"><b title="${esc(f.file_name)}">${esc(f.file_name)}</b><small>${sz(f.size)} · ${esc(nm(f.uploaded_by))} · ${fdt(f.uploaded_at)}</small></div><button class="btn sm ghost" data-a="dl" data-id="${esc(f.attachment_id)}">Download</button></div>`).join(''):empty('No files attached')}</div>
   <div class="sec" style="margin:0"><header><h2>Activity</h2></header>${!D?'<div class="sk"></div><div class="sk"></div>':D.error?`<div style="padding:14px 18px">${esc(D.error)} <button class="btn sm ghost" data-a="reloaddetail" data-id="${j.jo_id}">Try again</button></div>`:items.length?`<ul class="tl">${items.slice(0,30).map(i=>`<li>${i.h}<small>${fdt(i.t)}</small></li>`).join('')}</ul>`:empty('No activity yet')}</div></div>`;
   document.body.classList.add('dopen');el.scrollTop=scrollTop;gtMountAll(el);
@@ -1052,7 +1123,7 @@ function gtChart(i,m,key,useWin){
   let rows=`<div class="gr pj${nav?' go':''}"${go}><div class="gl"><div class="gt2"><div class="tl1"><em class="tg pj">Request</em><b title="${esc(j.title)}">${hl(j.title)}</b></div><small>${esc(j.jo_number)} · Requestor: ${esc(nm(j.requested_by))}</small><small class="dv">Developer: <b>${esc(dev)}</b></small><span class="chip c-${i.sc.c}"><i></i>${esc(i.sc.t)}</span>${tgl}</div></div>
     <div class="gtk" style="width:${W}px;${grid}" title="${esc(dates)}">${mk(i.start,i.end,i.target,i.done,j.progress,i.sc)}</div></div>`;
   rows+=(isOpen?tasksShown:[]).map(k=>{const t=k.t;
-    return `<div class="gr tk2${k.cx?' cx':''}${nav?' go':''}"${go}><div class="gl"><div class="gt2"><div class="tl1"><em class="tg tk">Task</em><b title="${esc(t.task_name)}">${hl(t.task_name)}</b></div><small>${esc(nm(t.assigned_to))} · ${esc(t.task_type==='Others'&&t.task_type_other?t.task_type_other:t.task_type)}</small>${k.cx?'<span class="chip c-bad"><i></i>Cancelled</span>':`<span class="chip c-${k.sc.c}"><i></i>${esc(k.sc.t)}</span>`}</div></div>
+    return `<div class="gr tk2${k.cx?' cx':''}${nav?' go':''}"${nav?` data-a="taskopen" data-id="${t.task_id}" role="button" tabindex="0" title="View task details"`:''}><div class="gl"><div class="gt2"><div class="tl1"><em class="tg tk">Task</em><b title="${esc(t.task_name)}">${hl(t.task_name)}</b></div><small>${esc(nm(t.assigned_to))} · ${esc(t.task_type==='Others'&&t.task_type_other?t.task_type_other:t.task_type)}</small>${k.cx?'<span class="chip c-bad"><i></i>Cancelled</span>':`<span class="chip c-${k.sc.c}"><i></i>${esc(k.sc.t)}</span>`}</div></div>
       <div class="gtk" style="width:${W}px;${grid}" title="${esc('Due '+(k.target!=null?dlabel(k.target):'not set')+(k.done?' · Finished '+dlabel(k.end):''))}">${k.cx?'':mk(k.start,k.end,k.target,k.done,t.progress,k.sc)}</div></div>`}).join('');
   if(isOpen&&!tasksShown.length)rows+=`<div class="gr tk2"><div class="gl"><div class="gt2"><small>${nT?'No tasks in this date range':'No tasks yet'}</small></div></div><div class="gtk" style="width:${W}px;min-height:42px"></div></div>`;
   return `<div class="gt" data-key="${esc(key)}" tabindex="0" aria-label="Timeline chart for job order ${esc(j.title)}"><div class="gin"><div class="gr gh"><div class="gl">Job order and tasks</div><div class="gtk" style="width:${W}px">${head}</div></div>${rows}${m.today>=lo&&m.today<=hi?`<span class="gtd" style="left:calc(var(--lw) + ${XC(m.today)}px)"></span>`:''}</div></div>`;
@@ -1094,7 +1165,8 @@ function gtBody(){
     <div class="gtl ${st.finJ&&st.onJ==='100%'?'ok':''}"><b>${st.onJ}</b><span>Finished on time</span><small>${st.finJ?'Of '+pl(st.finJ,'finished job order')+' with a target date':'No finished job order with a target date yet'}</small></div>
     <div class="gtl"><b>${st.onT}</b><span>Tasks finished on time</span><small>Against each task's due date</small></div>
     <div class="gtl ${st.overT?'bad':''}"><b>${st.overT}</b><span>Tasks overdue now</span><small>Across ${pl(items.length,'job order')}</small></div></div>`;
-    return pick+tiles+gtLegend+`<div class="gthint">Select a job order or task row to see its details.<span class="sp"></span><button class="btn sm ghost" type="button" data-a="gtxa" data-v="${allOpen?0:1}">${allOpen?'Collapse all':'Expand all'}</button></div>`+items.map(i=>`<div class="gtone">${gtChart(i,m,'p'+i.j.jo_id,true)}</div>`).join('');
+    const TG=pageOf('tl',items.length);
+    return pick+tiles+gtLegend+`<div class="gthint">Select a job order or task row to see its details.<span class="sp"></span><button class="btn sm ghost" type="button" data-a="gtxa" data-v="${allOpen?0:1}">${allOpen?'Collapse all':'Expand all'}</button></div>`+items.slice(TG.from,TG.to).map(i=>`<div class="gtone">${gtChart(i,m,'p'+i.j.jo_id,true)}</div>`).join('')+pager(TG);
   }
   const j=cur.j,live=cur.tasks.filter(k=>!k.cx),fin=live.filter(k=>k.done&&k.target!=null),on=fin.filter(k=>k.sc.k==='ok'),
     over=live.filter(k=>!k.done&&k.sc&&k.sc.k==='over').length,soon=live.filter(k=>!k.done&&k.target!=null&&k.target>=m.today&&k.target-m.today<=7).length;
@@ -1138,6 +1210,54 @@ function render(){
 }
 
 /* ============ events ============ */
+
+/* ============ task details ============ */
+function taskDetailBody(t){
+  const j=jobOf(t.jo_id)||{},D=ui.detail[t.jo_id],cx=t.status==='Cancelled';
+  const files=D?D.files.filter(f=>f.task_id===t.task_id):[];
+  const ups=D?D.updates.filter(u=>u.task_id===t.task_id).sort((a,b)=>String(b.updated_at).localeCompare(String(a.updated_at))):[];
+  const moves=D?D.history.filter(h=>h.jo_id===t.jo_id&&String(h.note||'').indexOf('Due date of '+t.task_name+' changed')===0):[];
+  const ev=[].concat(ups.map(u=>({t:u.updated_at,h:`<b>${esc(nm(u.updated_by))}</b> ${u.prev_progress!==''&&u.prev_progress!==undefined?'moved progress from '+esc(u.prev_progress)+'% to ':'set progress to '}<b>${esc(u.progress)}%</b>${u.remark?`<small class="rtext">${esc(u.remark)}</small>`:''}`})),
+    moves.map(h=>({t:h.changed_at,h:`<b>${esc(nm(h.changed_by))}</b> ${esc(String(h.note).replace('Due date of '+t.task_name+' changed','changed the due date').replace(/\d{4}-\d{2}-\d{2}/g,d=>fd(d)))}`}))).sort((a,b)=>String(b.t).localeCompare(String(a.t)));
+  return `<div class="tdv">
+    <div class="tdv-top">${chip(t.status)}<span class="tr-ty">${esc(t.task_type==='Others'&&t.task_type_other?'Others: '+t.task_type_other:t.task_type)}</span><a href="#" data-a="tdjo" data-id="${t.jo_id}" class="tdv-jo">${esc(j.jo_number||'')} · ${esc(j.title||'')}</a></div>
+    <dl class="tdv-g">
+      <div><dt>Assigned to</dt><dd>${av(t.assigned_to)}${esc(nm(t.assigned_to))}</dd></div>
+      <div><dt>Due date</dt><dd class="${taskOver(t)?'over':''}">${t.due_date?fd(t.due_date):'Not set'}</dd>${t.original_due_date&&t.original_due_date!==t.due_date?`<small class="orig">Originally ${fd(t.original_due_date)}</small>`:''}</div>
+      <div><dt>Started</dt><dd>${t.start_date?fdt(t.start_date):'Not started'}</dd></div>
+      <div><dt>${t.status==='Completed'?'Completed':'Progress'}</dt><dd>${cx?'Cancelled':t.status==='Completed'?fdt(t.completed_at):donut(t.progress)+'<span>'+t.progress+'% done</span>'}</dd></div>
+    </dl>
+    ${cx&&t.cancel_reason?`<p class="tdv-x"><b>Cancelled:</b> ${esc(t.cancel_reason)}</p>`:''}
+    <h3>Description</h3>${t.description?`<div class="td rtext">${esc(t.description)}</div>`:'<p class="tdv-none">No description.</p>'}
+    <h3>Files</h3>${!D?'<div class="sk"></div>':files.length?`<div class="fchips" style="display:flex;gap:6px;flex-wrap:wrap">${files.map(fileChip).join('')}</div>`:'<p class="tdv-none">No files attached to this task.</p>'}
+    <h3>History</h3>${!D?'<div class="sk"></div>':D.error?`<p class="tdv-none">${esc(D.error)}</p>`:ev.length?`<ul class="tl">${ev.slice(0,20).map(i=>`<li>${i.h}<small>${fdt(i.t)}</small></li>`).join('')}</ul>`:'<p class="tdv-none">No updates yet.</p>'}
+  </div>`;
+}
+function taskDetail(id){
+  const t=S.tasks.find(x=>x.task_id===id);if(!t)return;
+  const j=jobOf(t.jo_id)||{},me=S.me,active=ACTIVE.indexOf(j.status)>=0,mg=canManage(j),cx=t.status==='Cancelled',can=active&&!cx&&(mg||t.assigned_to===me.email);
+  const go=(a,l,cls)=>`<button type="button" class="btn sm ${cls||'ghost'}" data-a="tdgo" data-go="${a}" data-id="${t.task_id}">${l}</button>`;
+  ui.td=id;
+  dialog({title:t.task_name,single:1,label:'Close',busy:'Closing…',wide:1,
+    html:`<div id="tdbody">${taskDetailBody(t)}</div>`,
+    html2:(can||(active&&mg))?`<div class="tdv-a">${can?go('updtask','Update progress','')+go('restask','Change due date'):''}${active&&mg?(cx?go('reinstate','Reinstate'):go('canceltask','Cancel task')):''}</div>`:'',
+    fields:[],onSubmit:()=>null});
+  if(!ui.detail[t.jo_id])loadDetail(t.jo_id,true).then(()=>{if(ui.td===id&&$('#dlg').open&&$('#tdbody')){const cur=S.tasks.find(x=>x.task_id===id);if(cur)$('#tdbody').innerHTML=taskDetailBody(cur)}});
+}
+function resTask(t){
+  dialog({title:'Change due date',desc:t.task_name,label:'Save due date',busy:'Saving…',
+    fields:[{k:'due_date',l:'New due date',t:'date',req:1,v:t.due_date,hint:t.original_due_date?'Originally due '+fd(t.original_due_date)+'.':(t.due_date?'Currently due '+fd(t.due_date)+'.':'')},
+      {k:'reason',l:'Reason',t:'area',rows:3,max:500,req:1,hint:'Saved in the activity history, so everyone can see why the date moved.'}],
+    validate:v=>v.due_date===t.due_date?'Choose a different date.':'',
+    onSubmit:v=>act('rescheduleTask',{task_id:t.task_id,due_date:v.due_date,reason:v.reason},'Due date updated',1)});
+}
+function resJo(j){
+  dialog({title:'Change target date',desc:`${j.jo_number}: ${j.title}`,label:'Save target date',busy:'Saving…',
+    fields:[{k:'target_date',l:'New target date',t:'date',req:1,v:j.target_date,hint:j.original_target_date?'Originally requested for '+fd(j.original_target_date)+'.':(j.target_date?'Currently '+fd(j.target_date)+'.':'')},
+      {k:'reason',l:'Reason',t:'area',rows:3,max:500,req:1,hint:'Saved in the activity history.'}],
+    validate:v=>v.target_date===j.target_date?'Choose a different date.':'',
+    onSubmit:v=>act('rescheduleJO',{jo_id:j.jo_id,target_date:v.target_date,reason:v.reason},'Target date updated',1)});
+}
 const H={
   gtz:el=>{gt.px=+el.dataset.v;gt.pos={};render()},
   gtp:el=>{const v=el.dataset.v,t=new Date(Date.now()-new Date().getTimezoneOffset()*6e4),iso=d=>d.toISOString().slice(0,10);
@@ -1164,7 +1284,9 @@ const H={
   close:()=>{ui.jo=null;drawer()},
   newjo:()=>newJo(),
   view:el=>{ui.view=el.dataset.v;render()},
-  filter:el=>{ui.st=ui.st===el.dataset.s?'':el.dataset.s;ui.page='jos';render()},
+  filter:el=>{ui.st=ui.st===el.dataset.s?'':el.dataset.s;ui.pg.jos=1;ui.page='jos';render()},
+  pgo:el=>{const k=el.dataset.k;ui.pg[k]=+el.dataset.p;pgRefresh(k);if(k==='jos'||k==='users'||k==='log'){const m=$('#main');if(m)m.scrollIntoView({block:'start'})}},
+  colmore:el=>{const k=el.dataset.k;ui.cm[k]=(ui.cm[k]||8)+8;pgRefresh('jos')},
   refresh:async()=>{const e=await act('bootstrap',null,'Up to date',1);if(e&&e.indexOf('ACCESS:')<0)toast(e,'err');if(ui.page==='log')loadLog()},
   signout:()=>doSignOut(),
   account:()=>dialog({title:'Your account',cancel:'Close',label:'Sign out',danger:1,
@@ -1172,6 +1294,11 @@ const H={
     onSubmit:()=>{doSignOut();return null}}),
   approve:el=>approveJo(jobOf(el.dataset.id)),reject:el=>rejectJo(jobOf(el.dataset.id)),assign:el=>assignJo(jobOf(el.dataset.id)),
   cancel:el=>cancelJo(jobOf(el.dataset.id)),closejo:el=>closeJo(jobOf(el.dataset.id)),addtask:el=>addTask(jobOf(el.dataset.id)),
+  taskopen:el=>taskDetail(el.dataset.id),
+  tdgo:el=>{$('#dlg').close();ui.td=null;H[el.dataset.go](el)},
+  tdjo:el=>{$('#dlg').close();ui.td=null;ui.jo=el.dataset.id;drawer()},
+  restask:el=>{const t=S.tasks.find(x=>x.task_id===el.dataset.id);if(t)resTask(t)},
+  resjo:el=>{const j=jobOf(el.dataset.id);if(j)resJo(j)},
   canceltask:el=>{const t=S.tasks.find(x=>x.task_id===el.dataset.id);dialog({title:'Cancel task',desc:t.task_name,label:'Cancel task',danger:1,busy:'Cancelling…',cancel:'Keep task',fields:[{k:'reason',l:'Reason',t:'area',rows:3,max:500,req:1,hint:'Why is this task being cancelled? It stays on the request, marked Cancelled, and no longer counts toward progress.'}],onSubmit:v=>act('cancelTask',{task_id:t.task_id,reason:v.reason},'Task cancelled',1)})},
   reinstate:el=>{const t=S.tasks.find(x=>x.task_id===el.dataset.id);dialog({title:'Reinstate task',desc:t.task_name,label:'Reinstate task',busy:'Reinstating…',html:'<p class="dd">The task goes back into the job order and counts toward progress again.</p>',fields:[],onSubmit:()=>act('reinstateTask',{task_id:t.task_id},'Task reinstated',1)})},
   updtask:el=>updTask(S.tasks.find(t=>t.task_id===el.dataset.id)),
@@ -1183,12 +1310,13 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Enter'||e.key===' '){const el=e.target.closest('[data-a][role=button],tr[data-a]');if(el&&el===e.target&&S){e.preventDefault();H[el.dataset.a](el)}}
   if(e.key==='Escape'&&S&&ui.jo&&!$('#dlg').open){ui.jo=null;drawer()}
 });
-document.addEventListener('input',e=>{if(e.target.id==='gtq'){gt.q=e.target.value;gt.pos={};gtRefresh()}
-  if(e.target.id==='q'){ui.q=e.target.value;$('#res').innerHTML=results()}});
+document.addEventListener('input',e=>{if(e.target.id==='gtq'){gt.q=e.target.value;gt.pos={};ui.pg.tl=1;gtRefresh()}
+  if(e.target.id==='q'){ui.q=e.target.value;ui.pg.jos=1;$('#res').innerHTML=results()}});
 document.addEventListener('change',e=>{if(e.target.id==='gtsel'){gt.sel=e.target.value;render()}
-  if(e.target.id==='gtst'){gt.st=e.target.value;render()}
-  if(e.target.id==='gtfrom'||e.target.id==='gtto'){gt[e.target.id==='gtfrom'?'from':'to']=e.target.value;gt.pos={};gtRefresh()}
-  if(e.target.id==='pr'){ui.pr=e.target.value;$('#res').innerHTML=results()}});
+  if(e.target.id==='gtst'){gt.st=e.target.value;ui.pg.tl=1;render()}
+  if(e.target.id==='gtfrom'||e.target.id==='gtto'){gt[e.target.id==='gtfrom'?'from':'to']=e.target.value;gt.pos={};ui.pg.tl=1;gtRefresh()}
+  if(e.target.id==='pr'){ui.pr=e.target.value;ui.pg.jos=1;$('#res').innerHTML=results()}
+  if(e.target.dataset&&e.target.dataset.pgs){const k=e.target.dataset.pgs;ui.ps[k]=+e.target.value;ui.pg[k]=1;pgRefresh(k)}});
 
 /* ============ sign-in with Google (the user picks the account every time) ============ */
 let signing=false,idleT=null,vctl=null,vslow=null;
