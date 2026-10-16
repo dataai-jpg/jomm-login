@@ -219,6 +219,7 @@ dialog.wide{width:min(640px,calc(100vw - 24px))}
 .pgrp>summary::before{content:"▸";color:var(--mut);transition:transform .15s;font-size:12px}.pgrp[open]>summary::before{transform:rotate(90deg)}.pgrp>summary .who{display:inline-flex;align-items:center;gap:8px}.pgrp>summary .sp{flex:1}
 .rw-side .dn{width:34px;height:34px}.rw-side .dn svg{width:34px;height:34px}
 @media(max-width:760px){dialog.wide{width:100vw}}
+.stags{display:flex;gap:6px;flex-wrap:wrap;margin:-6px 0 12px}.stags .tag{background:color-mix(in srgb,var(--brand) 12%,transparent);color:var(--brand);border-radius:999px;padding:2px 10px}.stags .tag.st{background:var(--brand);color:var(--on-brand)}
 .tlist{list-style:none;margin:0;padding:4px 8px 6px}
 .tr{display:grid;grid-template-columns:30px minmax(0,1fr) auto auto;grid-template-areas:"o n p a" "o m p a" "o d d d";align-items:center;column-gap:10px;row-gap:1px;padding:6px 8px;border-radius:10px;border-bottom:1px solid var(--line)}
 .tr:last-child{border-bottom:0}.tr:hover{background:color-mix(in srgb,var(--brand) 4%,transparent)}.tr.cx{opacity:.7}.tr.cx .tr-n b{text-decoration:line-through}
@@ -429,7 +430,7 @@ dialog textarea{max-height:40vh}
 <script>
 /* ============ state & helpers ============ */
 let S=null;
-const ui={pg:{},ps:{jos:15,users:15,log:25,tl:5,dash:5,mine:6,team:5,rev:6,lead:6},cm:{},gc:{},page:'dash',q:'',st:'',pr:'',view:innerWidth<760?'list':'board',jo:null,pending:0,log:null,detail:{},dl:{},tok:null,exp:0};
+const ui={sv:'',pg:{},ps:{jos:15,users:15,log:25,tl:5,dash:5,mine:6,team:5,rev:6,lead:6},cm:{},gc:{},page:'dash',q:'',st:'',pr:'',view:innerWidth<760?'list':'board',jo:null,pending:0,log:null,detail:{},dl:{},tok:null,exp:0};
 const $=(s,r=document)=>r.querySelector(s);
 const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const msgOf=e=>String(e&&e.message||e||'').replace(/^Error:\s*/,'');
@@ -596,7 +597,7 @@ function dialog(o){
     setDlgBusy(false);
     if(err)showErr(err);else d.close();
   };
-  d.showModal();
+  d.showModal();if(o.onOpen)o.onOpen();
   d.querySelectorAll('textarea').forEach(t=>{const g=()=>{t.style.height='auto';t.style.height=Math.min(t.scrollHeight+2,Math.round(innerHeight*.4))+'px'};t.addEventListener('input',g);g()});
   if(o.after)o.after(d);
   const ff=fs.find(f=>!f.ro&&f.t!=='pct'&&f.t!=='check');if(ff)$('#f_'+ff.k).focus();
@@ -714,9 +715,10 @@ function newJo(){
   let dr=draftGet();if(!dr||dr.owner!==S.me.email)dr={sid:uid(),owner:S.me.email,v:{},state:'idle'};
   const restored=Object.keys(dr.v||{}).length>0,v0=dr.v||{},P=picker('Reference files (optional)');let created=null;
   dialog({title:'New request',desc:restored?'We kept the details of your last attempt. Submitting again will not create a duplicate.':'Describe the work you need. A manager reviews it and assigns a developer.',label:'Submit request',busy:'Submitting…',
-    fields:[{k:'title',l:'Title',req:1,max:140,v:v0.title},{k:'service_type',l:'Service type',t:'select',o:S.lists.service_types,v:v0.service_type},{k:'business_unit',l:'Business unit',req:1,max:80,v:v0.business_unit??S.me.business_unit},{k:'department',l:'Department',req:1,max:80,v:v0.department??S.me.department},{k:'sales_office',l:'Sales office',max:80,v:v0.sales_office??S.me.sales_office,hint:S.me.business_unit||S.me.department?'Filled in from your profile. You can change it for this request.':'Optional.'},{k:'description',l:'Details',t:'area',rows:4,max:4000,hint:'What do you need, and why?',v:v0.description},{k:'priority',l:'Priority',t:'select',o:S.lists.priorities,v:v0.priority||'Medium'},{k:'target_date',l:'Target date',t:'date',min:todayStr(),v:v0.target_date}],
+    fields:[{k:'title',l:'Title',req:1,max:140,v:v0.title},{k:'service_category',l:'Service category',t:'select',o:S.lists.service_categories,v:v0.service_category,ph:'Choose a category',req:1},{k:'request_type',l:'Request type',t:'select',o:S.lists.request_types,v:v0.request_type,ph:'Choose a request type',req:1},{k:'service_type',l:'Service type',ro:1,v:v0.service_category&&v0.request_type?v0.service_category+' '+v0.request_type:'',hint:'Generated from the category and request type.'},{k:'business_unit',l:'Business unit',req:1,max:80,v:v0.business_unit??S.me.business_unit},{k:'department',l:'Department',req:1,max:80,v:v0.department??S.me.department},{k:'sales_office',l:'Sales office',max:80,v:v0.sales_office??S.me.sales_office,hint:S.me.business_unit||S.me.department?'Filled in from your profile. You can change it for this request.':'Optional.'},{k:'description',l:'Details',t:'area',rows:4,max:4000,hint:'What do you need, and why?',v:v0.description},{k:'priority',l:'Priority',t:'select',o:S.lists.priorities,v:v0.priority||'Medium'},{k:'target_date',l:'Target date',t:'date',min:todayStr(),v:v0.target_date}],
     html:'<div class="subst" id="subst" role="status"></div>',html2:P.html(),
     validate:()=>P.invalid()?'Remove the files marked with an error, then submit again.':'',
+    onOpen:()=>{const c=$('#f_service_category'),r=$('#f_request_type'),s=$('#f_service_type');if(!c||!r||!s)return;const up=()=>{s.value=c.value&&r.value?c.value+' '+r.value:''};c.addEventListener('change',up);r.addEventListener('change',up);up()},
     onSubmit:async v=>{
       if(!created){
         dr.v=v;dr.state='submitting';draftSet(dr);setSub('Submitting','Sending your request…');
@@ -954,7 +956,7 @@ function dash(){
 const FILTERS=[['','All'],['Submitted','Awaiting review'],['Pending','Pending'],['In Progress','In progress'],['Completed','Completed'],['Closed','Closed'],['Rejected','Rejected'],['Cancelled','Cancelled']];
 function filtered(){
   const q=ui.q.trim().toLowerCase();
-  return sorted(S.jos.filter(j=>(!ui.st||j.status===ui.st)&&(!ui.pr||j.priority===ui.pr)&&(!q||[j.jo_number,j.title,j.business_unit,j.department,j.sales_office,nm(j.requested_by),nm(j.assigned_developer)].join(' ').toLowerCase().indexOf(q)>=0)));
+  return sorted(S.jos.filter(j=>(!ui.st||j.status===ui.st)&&(!ui.pr||j.priority===ui.pr)&&(!ui.sv||j.service_type===ui.sv)&&(!q||[j.jo_number,j.title,j.service_type,j.service_category,j.request_type,j.business_unit,j.department,j.sales_office,nm(j.requested_by),nm(j.assigned_developer)].join(' ').toLowerCase().indexOf(q)>=0)));
 }
 function card(j){
   return `<article class="card" style="--c:var(--${scls(j.status)==='sub'?'sub':scls(j.status)})" role="button" tabindex="0" data-a="open" data-id="${j.jo_id}"><div class="ch"><span class="num">${esc(j.jo_number)}</span><span class="tag p-${esc(String(j.priority).toLowerCase())}">${esc(j.priority)}</span></div><h4>${esc(j.title)}</h4><div class="cm">${av(j.requested_by)}<span>${esc(nm(j.requested_by))}</span></div>${pbar(j.progress)}<div class="cf"><span class="d ${isOver(j)?'over':''}">${ic('clock',14)}${j.target_date?fd(j.target_date):'No target'}</span>${av(j.assigned_developer)}</div></article>`;
@@ -970,8 +972,10 @@ function results(){
   const G=pageOf('jos',L.length),PL=L.slice(G.from,G.to);
   return `<div class="panel wide-t"><table class="rt jot"><thead><tr><th>Job order</th><th>Business unit</th><th>Department</th><th>Sales office</th><th>Requested by</th><th>Developer</th><th>Priority</th><th>Target</th><th>Status</th><th>Progress</th></tr></thead><tbody>${PL.map(j=>`<tr class="k" tabindex="0" data-a="open" data-id="${j.jo_id}"><td class="first"><b>${esc(j.title)}</b><small style="color:var(--mut)">${esc(j.jo_number)} &nbsp; ${esc(j.service_type)}</small></td><td data-label="Business unit">${esc(j.business_unit||'–')}</td><td data-label="Department">${esc(j.department||'–')}</td><td data-label="Sales office">${esc(j.sales_office||'–')}</td><td data-label="Requested by"><span class="who">${av(j.requested_by)}${esc(nm(j.requested_by))}</span></td><td data-label="Developer"><span class="who">${av(j.assigned_developer)}${j.assigned_developer?esc(nm(j.assigned_developer)):'Unassigned'}</span></td><td data-label="Priority"><span class="tag p-${esc(String(j.priority).toLowerCase())}">${esc(j.priority)}</span></td><td data-label="Target" class="${isOver(j)?'over':''}">${fd(j.target_date)}</td><td data-label="Status">${chip(j.status)}</td><td data-label="Progress" style="min-width:120px">${pbar(j.progress)}</td></tr>`).join('')}</tbody></table>${pager(G)}</div>`;
 }
+/* The six generated service types, plus any older value that is still saved on existing job orders. */
+const svOptions=()=>{const base=S.lists.service_types.slice(),extra=[...new Set(S.jos.map(j=>j.service_type).filter(v=>v&&base.indexOf(v)<0))].sort();return base.concat(extra)};
 function jos(){
-  return `<div class="tool"><div class="search">${ic('search')}<input id="q" type="search" placeholder="Search by number, title or person" value="${esc(ui.q)}" aria-label="Search job orders"></div><select id="pr" aria-label="Priority"><option value="">Any priority</option>${S.lists.priorities.map(p=>`<option${ui.pr===p?' selected':''}>${p}</option>`).join('')}</select><div class="tog" role="group" aria-label="View"><button data-a="view" data-v="board" class="${ui.view==='board'?'on':''}">${ic('board',16)}Board</button><button data-a="view" data-v="list" class="${ui.view==='list'?'on':''}">${ic('list',16)}List</button></div></div>
+  return `<div class="tool"><div class="search">${ic('search')}<input id="q" type="search" placeholder="Search by number, title or person" value="${esc(ui.q)}" aria-label="Search job orders"></div><select id="pr" aria-label="Priority"><option value="">Any priority</option>${S.lists.priorities.map(p=>`<option${ui.pr===p?' selected':''}>${p}</option>`).join('')}</select><select id="sv" aria-label="Service type"><option value="">Any service type</option>${svOptions().map(v=>`<option value="${esc(v)}"${ui.sv===v?' selected':''}>${esc(v)}</option>`).join('')}</select><div class="tog" role="group" aria-label="View"><button data-a="view" data-v="board" class="${ui.view==='board'?'on':''}">${ic('board',16)}Board</button><button data-a="view" data-v="list" class="${ui.view==='list'?'on':''}">${ic('list',16)}List</button></div></div>
   <div class="fchips">${FILTERS.map(([k,l])=>`<button data-a="filter" data-s="${k}" class="${ui.st===k?'on':''}">${l}</button>`).join('')}</div><div id="res">${results()}</div>`;
 }
 function users(){
@@ -1072,7 +1076,7 @@ function drawer(){
   items.sort((a,b)=>String(b.t).localeCompare(String(a.t)));
   const scrollTop=el.scrollTop,fk=document.activeElement&&document.activeElement.dataset&&el.contains(document.activeElement)?document.activeElement.dataset.drag:'';
   el.innerHTML=`<div class="dr-h"><b>${esc(j.jo_number)}</b>${chip(j.status)}<span class="sp"></span><button class="ib" data-a="close" aria-label="Close details">${ic('x')}</button></div>
-  <div class="dr-b"><h2>${esc(j.title)}</h2>
+  <div class="dr-b"><h2>${esc(j.title)}</h2><div class="stags">${j.service_type?`<span class="tag st" title="Service type">${esc(j.service_type)}</span>`:''}${j.service_category?`<span class="tag" title="Service category">${esc(j.service_category)}</span>`:''}${j.request_type?`<span class="tag" title="Request type">${esc(j.request_type)}</span>`:''}</div>
   ${cur!==undefined?`<div class="stages">${stg.map((s,i)=>`<div class="${i<cur?'done':i===cur?'cur':''}">${s[0]}<br><span style="font-weight:400">${i===cur?s[1]:''}</span></div>`).join('')}</div>`:`<div class="note"><b>${esc(slabel(j.status))}.</b> ${esc(j.review_note||'')}</div>`}
   ${j.description?`<p style="white-space:pre-wrap">${esc(j.description)}</p>`:''}
   <div class="facts"><div><span>Requested by</span><b>${av(j.requested_by)}${esc(nm(j.requested_by))}</b></div><div><span>Priority</span><b>${esc(j.priority)}</b></div><div><span>Target date</span><b class="${isOver(j)?'over':''}">${fd(j.target_date)}${canManage(j)&&(ACTIVE.indexOf(j.status)>=0||j.status==='Submitted')?`<button type="button" class="lk" data-a="resjo" data-id="${j.jo_id}">Change</button>`:''}</b>${j.original_target_date&&j.original_target_date!==j.target_date?`<small class="orig">Originally ${fd(j.original_target_date)}</small>`:''}</div><div><span>Developer</span><b>${av(j.assigned_developer)}${j.assigned_developer?esc(nm(j.assigned_developer)):'Not assigned'}</b></div>
@@ -1366,6 +1370,7 @@ document.addEventListener('change',e=>{if(e.target.id==='gtsel'){gt.sel=e.target
   if(e.target.id==='gtst'){gt.st=e.target.value;ui.pg.tl=1;render()}
   if(e.target.id==='gtfrom'||e.target.id==='gtto'){gt[e.target.id==='gtfrom'?'from':'to']=e.target.value;gt.pos={};ui.pg.tl=1;gtRefresh()}
   if(e.target.id==='pr'){ui.pr=e.target.value;ui.pg.jos=1;$('#res').innerHTML=results()}
+  if(e.target.id==='sv'){ui.sv=e.target.value;ui.pg.jos=1;$('#res').innerHTML=results()}
   if(e.target.dataset&&e.target.dataset.pgs){const k=e.target.dataset.pgs;ui.ps[k]=+e.target.value;ui.pg[k]=1;pgRefresh(k)}});
 
 /* ============ sign-in with Google (the user picks the account every time) ============ */
