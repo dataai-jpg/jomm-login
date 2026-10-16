@@ -124,6 +124,7 @@ main{padding:24px 28px 40px;max-width:none;width:100%}
 .kpis div{padding:14px 18px;border-right:1px solid var(--line)}.kpis div:last-child{border:0}
 .kpis b{display:block;font-size:24px;line-height:1.15;font-weight:700;letter-spacing:-.02em}.kpis span{color:var(--mut);font-size:12.5px}.kpis .bad b{color:var(--bad)}
 .cols{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;align-items:start}
+.scrl{max-height:min(380px,50vh);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}.scrl:focus-visible{outline:2px solid var(--brand,#2563eb);outline-offset:-2px}
 .sec{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden}
 .sec>header{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line)}.sec>header .sp{flex:1}.sec>header small{color:var(--mut)}
 .rw{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid var(--line);cursor:pointer}
@@ -911,10 +912,9 @@ function dTask(t){
 function openByPerson(tasks,key,title,none){
   const g={};tasks.forEach(t=>{(g[t.assigned_to]=g[t.assigned_to]||[]).push(t)});
   const ppl=Object.keys(g).map(e=>({e,list:g[e].sort(byDue),over:g[e].filter(taskOver).length})).sort((a,b)=>(b.over-a.over)||(b.list.length-a.list.length)||nm(a.e).localeCompare(nm(b.e)));
-  const G=pageOf(key,ppl.length);
-  const body=ppl.slice(G.from,G.to).map((p,i)=>{const k=key+p.e,open=ui.gc[k]!==undefined?ui.gc[k]:(G.from+i)<2;
+    const body=ppl.map((p,i)=>{const k=key+p.e,open=ui.gc[k]!==undefined?ui.gc[k]:i<2;
     return `<details class="pgrp" data-gk="${esc(k)}"${open?' open':''}><summary><span class="who">${av(p.e)}<b>${esc(nm(p.e))}</b></span><span class="sp"></span>${p.over?`<span class="chip c-bad"><i></i>${p.over} overdue</span>`:''}<span class="chip c-pen"><i></i>${p.list.length} open</span></summary>${p.list.map(dTask).join('')}</details>`}).join('');
-  return `<div class="sec"><header><h2>${title}</h2><span class="sp"></span><small>${tasks.length} task${tasks.length===1?'':'s'} · ${ppl.length} ${ppl.length===1?'person':'people'}</small></header>${ppl.length?body+pager(G):empty(none[0],none[1])}</div>`;
+  return `<div class="sec"><header><h2>${title}</h2><span class="sp"></span><small>${tasks.length} task${tasks.length===1?'':'s'} · ${ppl.length} ${ppl.length===1?'person':'people'}</small></header>${ppl.length?`<div class="scrl" tabindex="0" aria-label="${esc(title)}">${body}</div>`:empty(none[0],none[1])}</div>`;
 }
 function dash(){
   const m=S.me,J=S.jos,T=S.tasks,cnt=s=>J.filter(j=>j.status===s).length;
@@ -928,9 +928,8 @@ function dash(){
   let left='',right='';
   if(m.staff){
     const wait=sorted(J.filter(j=>j.status==='Submitted'));
-    const RG=pageOf('rev',wait.length);
-    left+=`<div class="sec"><header><h2>Awaiting your review</h2><span class="sp"></span><small>${wait.length}</small></header>${wait.length?wait.slice(RG.from,RG.to).map(j=>rowJo(j,`<div class="acts"><button class="btn sm" data-a="approve" data-id="${j.jo_id}">Approve</button><button class="btn sm ghost" data-a="reject" data-id="${j.jo_id}">Reject</button></div>`)).join('')+pager(RG):empty('All caught up','New requests appear here.')}</div>`;
-    if(over.length)left+=`<div class="sec"><header><h2>Overdue</h2><span class="sp"></span><small>${over.length}</small></header>${over.slice(0,6).map(j=>rowJo(j)).join('')}</div>`;
+    left+=`<div class="sec"><header><h2>Awaiting your review</h2><span class="sp"></span><small>${wait.length}</small></header>${wait.length?'<div class="scrl" tabindex="0" aria-label="Awaiting your review">'+wait.map(j=>rowJo(j,`<div class="acts"><button class="btn sm" data-a="approve" data-id="${j.jo_id}">Approve</button><button class="btn sm ghost" data-a="reject" data-id="${j.jo_id}">Reject</button></div>`)).join('')+'</div>':empty('All caught up','New requests appear here.')}</div>`;
+    if(over.length)left+=`<div class="sec"><header><h2>Overdue</h2><span class="sp"></span><small>${over.length}</small></header><div class="scrl" tabindex="0" aria-label="Overdue">${over.map(j=>rowJo(j)).join('')}</div></div>`;
     left+=openByPerson(T.filter(openT),'dash','Open tasks by person',['No open tasks','Every task is completed or cancelled.']);
     const devs=devList(),groups=S.teams.map(t=>[t.team_id,t.team_name]).concat([['','No team']]);
     const rows=groups.map(([id,name])=>{const mem=devs.filter(u=>(u.team_id||'')===id);if(!mem.length&&!id)return '';const emails=mem.map(u=>u.email),a=act_.filter(j=>emails.indexOf(j.assigned_developer)>=0);
@@ -938,13 +937,12 @@ function dash(){
     right+=`<div class="sec"><header><h2>Team workload</h2></header>${rows?`<table class="rt"><thead><tr><th>Team</th><th>Devs</th><th>Active</th><th>Tasks</th><th>Progress</th></tr></thead><tbody>${rows}</tbody></table>`:empty('No teams yet','Add teams and developers under Teams and Users.')}</div>`;
   }
   if(m.role==='Developer'){
-    const mine=T.filter(t=>t.assigned_to===m.email&&openT(t)).sort(byDue),MG=pageOf('mine',mine.length);
-    left+=`<div class="sec"><header><h2>My open tasks</h2><span class="sp"></span><small>${mine.length}${mine.filter(taskOver).length?` · ${mine.filter(taskOver).length} overdue`:''}</small></header>${mine.length?mine.slice(MG.from,MG.to).map(dTask).join('')+pager(MG):empty('No open tasks','Tasks assigned to you show up here.')}</div>`;
+    const mine=T.filter(t=>t.assigned_to===m.email&&openT(t)).sort(byDue);
+    left+=`<div class="sec"><header><h2>My open tasks</h2><span class="sp"></span><small>${mine.length}${mine.filter(taskOver).length?` · ${mine.filter(taskOver).length} overdue`:''}</small></header>${mine.length?'<div class="scrl" tabindex="0" aria-label="My open tasks">'+mine.map(dTask).join('')+'</div>':empty('No open tasks','Tasks assigned to you show up here.')}</div>`;
     const others=T.filter(t=>t.assigned_to!==m.email&&openT(t)&&leads(jobOf(t.jo_id)||{}));
     if(others.length)left+=openByPerson(others,'team','Open tasks in my job orders',['','']);
     const lead=sorted(J.filter(j=>leads(j)&&DONE_S.indexOf(j.status)<0));
-    const LD=pageOf('lead',lead.length);
-    left+=`<div class="sec"><header><h2>Assigned to me</h2><span class="sp"></span><small>${lead.length}</small></header>${lead.length?lead.slice(LD.from,LD.to).map(j=>rowJo(j,`<div class="rw-side">${chip(j.status)}${pbar(j.progress)}</div>`)).join('')+pager(LD):empty('Nothing assigned yet','A manager assigns job orders to you.')}</div>`;
+    left+=`<div class="sec"><header><h2>Assigned to me</h2><span class="sp"></span><small>${lead.length}</small></header>${lead.length?'<div class="scrl" tabindex="0" aria-label="Assigned to me">'+lead.map(j=>rowJo(j,`<div class="rw-side">${chip(j.status)}${pbar(j.progress)}</div>`)).join('')+'</div>':empty('Nothing assigned yet','A manager assigns job orders to you.')}</div>`;
   }
   if(m.role==='Requestor'){
     const my=sorted(J.filter(j=>j.requested_by===m.email)).slice(0,8);
