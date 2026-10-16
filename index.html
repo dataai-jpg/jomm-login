@@ -159,6 +159,8 @@ main{padding:24px 28px 40px;max-width:none;width:100%}
 .card .cf{display:flex;align-items:center;justify-content:space-between;margin-top:10px;color:var(--mut);font-size:12.5px}
 .card .cf span.d{display:flex;align-items:center;gap:5px}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
+.u1{display:block;font-weight:600;font-size:13px}.u2{display:block;color:var(--mut);font-size:12px}
+.panel.wide-t{overflow-x:auto}.rt.jot th,.rt.jot td{padding-left:10px;padding-right:10px;font-size:13px}.rt.jot .who{max-width:130px}.rt.jot .who>*:not(.av){overflow:hidden;text-overflow:ellipsis}@media(min-width:761px){.rt.jot th:first-child,.rt.jot td.first{position:sticky;left:0;background:var(--surface);z-index:1;box-shadow:1px 0 0 var(--line)}}.rt.jot td.first{min-width:230px;max-width:340px}.rt.jot td.first b{display:block;white-space:normal}.rt.jot td.first small{display:block;margin-top:2px}.rt.jot td,.rt.jot th{white-space:nowrap}.rt.jot td.first{white-space:normal}.rt.jot td.first small{white-space:nowrap}
 table{width:100%;border-collapse:collapse}
 th{text-align:left;font-weight:600;color:var(--mut);font-size:12.5px;padding:11px 16px;background:var(--surface2);border-bottom:1px solid var(--line);white-space:nowrap}
 td{padding:12px 16px;border-bottom:1px solid var(--line);vertical-align:middle}
@@ -712,7 +714,7 @@ function newJo(){
   let dr=draftGet();if(!dr||dr.owner!==S.me.email)dr={sid:uid(),owner:S.me.email,v:{},state:'idle'};
   const restored=Object.keys(dr.v||{}).length>0,v0=dr.v||{},P=picker('Reference files (optional)');let created=null;
   dialog({title:'New request',desc:restored?'We kept the details of your last attempt. Submitting again will not create a duplicate.':'Describe the work you need. A manager reviews it and assigns a developer.',label:'Submit request',busy:'Submitting…',
-    fields:[{k:'title',l:'Title',req:1,max:140,v:v0.title},{k:'service_type',l:'Service type',t:'select',o:S.lists.service_types,v:v0.service_type},{k:'description',l:'Details',t:'area',rows:4,max:4000,hint:'What do you need, and why?',v:v0.description},{k:'priority',l:'Priority',t:'select',o:S.lists.priorities,v:v0.priority||'Medium'},{k:'target_date',l:'Target date',t:'date',min:todayStr(),v:v0.target_date}],
+    fields:[{k:'title',l:'Title',req:1,max:140,v:v0.title},{k:'service_type',l:'Service type',t:'select',o:S.lists.service_types,v:v0.service_type},{k:'business_unit',l:'Business unit',req:1,max:80,v:v0.business_unit??S.me.business_unit},{k:'department',l:'Department',req:1,max:80,v:v0.department??S.me.department},{k:'sales_office',l:'Sales office',max:80,v:v0.sales_office??S.me.sales_office,hint:S.me.business_unit||S.me.department?'Filled in from your profile. You can change it for this request.':'Optional.'},{k:'description',l:'Details',t:'area',rows:4,max:4000,hint:'What do you need, and why?',v:v0.description},{k:'priority',l:'Priority',t:'select',o:S.lists.priorities,v:v0.priority||'Medium'},{k:'target_date',l:'Target date',t:'date',min:todayStr(),v:v0.target_date}],
     html:'<div class="subst" id="subst" role="status"></div>',html2:P.html(),
     validate:()=>P.invalid()?'Remove the files marked with an error, then submit again.':'',
     onSubmit:async v=>{
@@ -818,12 +820,57 @@ function addFiles(j){
       setSub('');toast('Files added');return null;
     },after:()=>P.mount()});
 }
+
+/* ============ import users from a CSV file ============ */
+function parseCSV(text){
+  text=String(text).replace(/^﻿/,'');
+  const first=text.split(/\r?\n/)[0]||'',sep=(first.match(/;/g)||[]).length>(first.match(/,/g)||[]).length?';':',';
+  const rows=[];let row=[],cur='',q=false;
+  for(let i=0;i<text.length;i++){const c=text[i];
+    if(q){if(c==='"'){if(text[i+1]==='"'){cur+='"';i++}else q=false}else cur+=c}
+    else if(c==='"')q=true;
+    else if(c===sep){row.push(cur);cur=''}
+    else if(c==='\n'||c==='\r'){if(c==='\r'&&text[i+1]==='\n')i++;row.push(cur);cur='';if(row.some(x=>x.trim()!==''))rows.push(row);row=[]}
+    else cur+=c}
+  row.push(cur);if(row.some(x=>x.trim()!==''))rows.push(row);
+  return rows;
+}
+const IMP_COLS={email:['email','emailaddress','mail'],name:['name','fullname'],business_unit:['businessunit','bu'],department:['department','dept'],sales_office:['salesoffice','office','area']};
+function csvToPeople(text){
+  const rows=parseCSV(text);if(rows.length<2)return {people:[],missing:'The file has no data rows.'};
+  const norm=h=>String(h).toLowerCase().replace(/[^a-z0-9]/g,''),head=rows[0].map(norm),idx={};
+  Object.keys(IMP_COLS).forEach(k=>{idx[k]=head.findIndex(h=>IMP_COLS[k].indexOf(h)>=0)});
+  if(idx.email<0)return {people:[],missing:'The first row must have an "email" column.'};
+  const people=rows.slice(1).map(r=>{const o={};Object.keys(idx).forEach(k=>{o[k]=idx[k]>=0?String(r[idx[k]]||'').trim():''});return o});
+  return {people,found:Object.keys(idx).filter(k=>idx[k]>=0)};
+}
+function importUsersDialog(){
+  let people=[];
+  dialog({title:'Import users',label:'Import',busy:'Importing…',
+    html:`<p class="dd">Choose a CSV file with the columns <b>email</b>, <b>full_name</b>, <b>business_unit</b>, <b>department</b> and <b>sales_office</b>. New emails are added as Requestors. People who already exist keep their role and status, and only their empty profile fields are filled in.</p><div class="fld"><label for="impf">CSV file</label><input type="file" id="impf" accept=".csv,text/csv"></div><div class="dd" id="impsum" aria-live="polite"></div>`,
+    fields:[],
+    onSubmit:async()=>{
+      if(!people.length)return 'Choose a CSV file first.';
+      const tot={added:0,updated:0,unchanged:0,invalidCount:0};
+      try{for(let i=0;i<people.length;i+=200){S=strip(await rpc('importUsers',{rows:people.slice(i,i+200)},{timeout:90000}));const r=ui.result||{};tot.added+=r.added||0;tot.updated+=r.updated||0;tot.unchanged+=r.unchanged||0;tot.invalidCount+=r.invalidCount||0}}
+      catch(e){const m=msgOf(e);if(m.indexOf('ACCESS:')>=0){showLogin(m.split('ACCESS:')[1]);return m}render();return m||'The import did not finish. Run it again to continue: people already added are skipped.'}
+      render();toast(`${tot.added} added, ${tot.updated} updated${tot.invalidCount?`, ${tot.invalidCount} skipped (invalid email)`:''}`);return null;
+    }});
+  $('#impf').onchange=async e=>{
+    const f=e.target.files[0],out=$('#impsum');people=[];if(!f){out.textContent='';return}
+    if(f.size>2e6){out.textContent='That file is too large. Keep it under 2 MB.';return}
+    const r=csvToPeople(await f.text());
+    if(r.missing){out.textContent=r.missing;return}
+    people=r.people;out.innerHTML=`<b>${people.length}</b> ${people.length===1?'person':'people'} found. Columns used: ${r.found.map(k=>esc(k.replace('_',' '))).join(', ')}.`;
+  };
+}
 function userForm(u){
   u=u||{};const edit=!!u.email;
   dialog({title:edit?'Edit user':'Add user',desc:edit?'':'They can sign in with this Google account email.',label:edit?'Save changes':'Add user',
     fields:[{k:'email',l:'Google account email',t:'email',v:u.email,ro:edit,req:1,max:120},{k:'name',l:'Full name',v:u.name,max:80},
       {k:'role',l:'Role',t:'select',o:S.roles,v:u.role||'Requestor'},{k:'account_status',l:'Account status',t:'select',o:S.statuses,v:u.account_status||'Active',hint:'Inactive and Locked accounts are blocked on their next action.'},
-      {k:'team_id',l:'Team',t:'select',o:S.teams.map(t=>[t.team_id,t.team_name]),ph:'No team',v:u.team_id}],
+      {k:'team_id',l:'Team',t:'select',o:S.teams.map(t=>[t.team_id,t.team_name]),ph:'No team',v:u.team_id},
+      {k:'business_unit',l:'Business unit',max:80,v:u.business_unit,hint:'Pre-fills this person\'s request forms.'},{k:'department',l:'Department',max:80,v:u.department},{k:'sales_office',l:'Sales office',max:80,v:u.sales_office}],
     onSubmit:v=>act('saveUser',v,edit?'User updated':'User added',1)});
 }
 function teamForm(t){
@@ -907,7 +954,7 @@ function dash(){
 const FILTERS=[['','All'],['Submitted','Awaiting review'],['Pending','Pending'],['In Progress','In progress'],['Completed','Completed'],['Closed','Closed'],['Rejected','Rejected'],['Cancelled','Cancelled']];
 function filtered(){
   const q=ui.q.trim().toLowerCase();
-  return sorted(S.jos.filter(j=>(!ui.st||j.status===ui.st)&&(!ui.pr||j.priority===ui.pr)&&(!q||[j.jo_number,j.title,nm(j.requested_by),nm(j.assigned_developer)].join(' ').toLowerCase().indexOf(q)>=0)));
+  return sorted(S.jos.filter(j=>(!ui.st||j.status===ui.st)&&(!ui.pr||j.priority===ui.pr)&&(!q||[j.jo_number,j.title,j.business_unit,j.department,j.sales_office,nm(j.requested_by),nm(j.assigned_developer)].join(' ').toLowerCase().indexOf(q)>=0)));
 }
 function card(j){
   return `<article class="card" style="--c:var(--${scls(j.status)==='sub'?'sub':scls(j.status)})" role="button" tabindex="0" data-a="open" data-id="${j.jo_id}"><div class="ch"><span class="num">${esc(j.jo_number)}</span><span class="tag p-${esc(String(j.priority).toLowerCase())}">${esc(j.priority)}</span></div><h4>${esc(j.title)}</h4><div class="cm">${av(j.requested_by)}<span>${esc(nm(j.requested_by))}</span></div>${pbar(j.progress)}<div class="cf"><span class="d ${isOver(j)?'over':''}">${ic('clock',14)}${j.target_date?fd(j.target_date):'No target'}</span>${av(j.assigned_developer)}</div></article>`;
@@ -921,7 +968,7 @@ function results(){
       const lim=ui.cm[k]||8,more=c.length-lim;return `<section class="col" aria-label="${l}"><header><span class="chip c-${k==='X'?'bad':scls(k)}"><i></i>${l}</span><span class="n">${c.length}</span></header>${c.slice(0,lim).map(card).join('')||'<div class="empty" style="padding:14px">None</div>'}${more>0?`<button type="button" class="btn sm ghost colmore" data-a="colmore" data-k="${k}">Show ${Math.min(8,more)} more <small>(${more} left)</small></button>`:''}</section>`}).join('')}</div>`;
   }
   const G=pageOf('jos',L.length),PL=L.slice(G.from,G.to);
-  return `<div class="panel"><table class="rt"><thead><tr><th>Job order</th><th>Requested by</th><th>Developer</th><th>Priority</th><th>Target</th><th>Status</th><th>Progress</th></tr></thead><tbody>${PL.map(j=>`<tr class="k" tabindex="0" data-a="open" data-id="${j.jo_id}"><td class="first"><b>${esc(j.title)}</b><small style="color:var(--mut)">${esc(j.jo_number)} &nbsp; ${esc(j.service_type)}</small></td><td data-label="Requested by"><span class="who">${av(j.requested_by)}${esc(nm(j.requested_by))}</span></td><td data-label="Developer"><span class="who">${av(j.assigned_developer)}${j.assigned_developer?esc(nm(j.assigned_developer)):'Unassigned'}</span></td><td data-label="Priority"><span class="tag p-${esc(String(j.priority).toLowerCase())}">${esc(j.priority)}</span></td><td data-label="Target" class="${isOver(j)?'over':''}">${fd(j.target_date)}</td><td data-label="Status">${chip(j.status)}</td><td data-label="Progress" style="min-width:150px">${pbar(j.progress)}</td></tr>`).join('')}</tbody></table>${pager(G)}</div>`;
+  return `<div class="panel wide-t"><table class="rt jot"><thead><tr><th>Job order</th><th>Business unit</th><th>Department</th><th>Sales office</th><th>Requested by</th><th>Developer</th><th>Priority</th><th>Target</th><th>Status</th><th>Progress</th></tr></thead><tbody>${PL.map(j=>`<tr class="k" tabindex="0" data-a="open" data-id="${j.jo_id}"><td class="first"><b>${esc(j.title)}</b><small style="color:var(--mut)">${esc(j.jo_number)} &nbsp; ${esc(j.service_type)}</small></td><td data-label="Business unit">${esc(j.business_unit||'–')}</td><td data-label="Department">${esc(j.department||'–')}</td><td data-label="Sales office">${esc(j.sales_office||'–')}</td><td data-label="Requested by"><span class="who">${av(j.requested_by)}${esc(nm(j.requested_by))}</span></td><td data-label="Developer"><span class="who">${av(j.assigned_developer)}${j.assigned_developer?esc(nm(j.assigned_developer)):'Unassigned'}</span></td><td data-label="Priority"><span class="tag p-${esc(String(j.priority).toLowerCase())}">${esc(j.priority)}</span></td><td data-label="Target" class="${isOver(j)?'over':''}">${fd(j.target_date)}</td><td data-label="Status">${chip(j.status)}</td><td data-label="Progress" style="min-width:120px">${pbar(j.progress)}</td></tr>`).join('')}</tbody></table>${pager(G)}</div>`;
 }
 function jos(){
   return `<div class="tool"><div class="search">${ic('search')}<input id="q" type="search" placeholder="Search by number, title or person" value="${esc(ui.q)}" aria-label="Search job orders"></div><select id="pr" aria-label="Priority"><option value="">Any priority</option>${S.lists.priorities.map(p=>`<option${ui.pr===p?' selected':''}>${p}</option>`).join('')}</select><div class="tog" role="group" aria-label="View"><button data-a="view" data-v="board" class="${ui.view==='board'?'on':''}">${ic('board',16)}Board</button><button data-a="view" data-v="list" class="${ui.view==='list'?'on':''}">${ic('list',16)}List</button></div></div>
@@ -929,8 +976,8 @@ function jos(){
 }
 function users(){
   const me=S.me,canEdit=u=>u.email!==me.email&&(me.super||u.role==='Developer'||u.role==='Requestor');
-  const UL=S.users.slice().sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''))),UG=pageOf('users',UL.length),rows=UL.slice(UG.from,UG.to).map(u=>`<tr><td class="first"><span class="who">${av(u.email,'lg')}<span><b>${esc(u.name)}</b><small>${esc(u.email)}</small></span></span></td><td data-label="Role">${esc(u.role)}</td><td data-label="Status"><span class="chip c-${u.account_status==='Active'?'done':u.account_status==='Locked'?'bad':'pen'}"><i></i>${esc(u.account_status)}</span></td><td data-label="Team">${esc(tm(u.team_id))}</td><td data-label="Last sign-in">${fdt(u.last_login)}</td><td>${canEdit(u)?`<button class="btn sm ghost" data-a="edituser" data-id="${esc(u.email)}">Edit</button>`:''}</td></tr>`).join('');
-  return `<div class="tool"><div style="flex:1"></div><button class="btn" data-a="adduser">${ic('plus',16)}Add user</button></div><div class="panel"><table class="rt"><thead><tr><th>User</th><th>Role</th><th>Status</th><th>Team</th><th>Last sign-in</th><th></th></tr></thead><tbody>${rows}</tbody></table>${pager(UG)}</div><p style="color:var(--mut);margin-top:12px">Only people listed here can sign in.${me.super?'':' Managers can add and edit Developers and Requestors.'}</p>`;
+  const UL=S.users.slice().sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''))),UG=pageOf('users',UL.length),rows=UL.slice(UG.from,UG.to).map(u=>`<tr><td class="first"><span class="who">${av(u.email,'lg')}<span><b>${esc(u.name)}</b><small>${esc(u.email)}</small></span></span></td><td data-label="Role">${esc(u.role)}</td><td data-label="Status"><span class="chip c-${u.account_status==='Active'?'done':u.account_status==='Locked'?'bad':'pen'}"><i></i>${esc(u.account_status)}</span></td><td data-label="Team">${esc(tm(u.team_id))}</td><td data-label="Business unit">${esc(u.business_unit||'–')}</td><td data-label="Department">${esc(u.department||'–')}</td><td data-label="Sales office">${esc(u.sales_office||'–')}</td><td data-label="Last sign-in">${fdt(u.last_login)}</td><td>${canEdit(u)?`<button class="btn sm ghost" data-a="edituser" data-id="${esc(u.email)}">Edit</button>`:''}</td></tr>`).join('');
+  return `<div class="tool"><div style="flex:1"></div><button class="btn ghost" data-a="importusers">Import CSV</button><button class="btn" data-a="adduser">${ic('plus',16)}Add user</button></div><div class="panel"><table class="rt"><thead><tr><th>User</th><th>Role</th><th>Status</th><th>Team</th><th>Business unit</th><th>Department</th><th>Sales office</th><th>Last sign-in</th><th></th></tr></thead><tbody>${rows}</tbody></table>${pager(UG)}</div><p style="color:var(--mut);margin-top:12px">Only people listed here can sign in.${me.super?'':' Managers can add and edit Developers and Requestors.'}</p>`;
 }
 function teams(){
   const act_=S.jos.filter(j=>j.status==='Pending'||j.status==='In Progress');
@@ -1029,7 +1076,7 @@ function drawer(){
   ${cur!==undefined?`<div class="stages">${stg.map((s,i)=>`<div class="${i<cur?'done':i===cur?'cur':''}">${s[0]}<br><span style="font-weight:400">${i===cur?s[1]:''}</span></div>`).join('')}</div>`:`<div class="note"><b>${esc(slabel(j.status))}.</b> ${esc(j.review_note||'')}</div>`}
   ${j.description?`<p style="white-space:pre-wrap">${esc(j.description)}</p>`:''}
   <div class="facts"><div><span>Requested by</span><b>${av(j.requested_by)}${esc(nm(j.requested_by))}</b></div><div><span>Priority</span><b>${esc(j.priority)}</b></div><div><span>Target date</span><b class="${isOver(j)?'over':''}">${fd(j.target_date)}${canManage(j)&&(ACTIVE.indexOf(j.status)>=0||j.status==='Submitted')?`<button type="button" class="lk" data-a="resjo" data-id="${j.jo_id}">Change</button>`:''}</b>${j.original_target_date&&j.original_target_date!==j.target_date?`<small class="orig">Originally ${fd(j.original_target_date)}</small>`:''}</div><div><span>Developer</span><b>${av(j.assigned_developer)}${j.assigned_developer?esc(nm(j.assigned_developer)):'Not assigned'}</b></div>
-  <div><span>Team</span><b>${esc(tm(j.developer_team))}</b></div><div><span>Review time</span><b>${dur(gap(j.requested_at,j.reviewed_at))}</b></div><div><span>Execution time</span><b>${dur(gap(j.work_started_at,j.completed_at))}</b></div><div><span>Total turnaround</span><b>${j.closed_at?dur(gap(j.requested_at,j.closed_at)):'Open'}</b></div></div>
+  <div><span>Business unit</span><b>${esc(j.business_unit||'–')}${staff()||(j.requested_by===me.email&&['Closed','Cancelled','Rejected'].indexOf(j.status)<0)?`<button type="button" class="lk" data-a="editinfo" data-id="${j.jo_id}">Edit</button>`:''}</b></div><div><span>Department</span><b>${esc(j.department||'–')}</b></div><div><span>Sales office</span><b>${esc(j.sales_office||'–')}</b></div><div><span>Team</span><b>${esc(tm(j.developer_team))}</b></div><div><span>Review time</span><b>${dur(gap(j.requested_at,j.reviewed_at))}</b></div><div><span>Execution time</span><b>${dur(gap(j.work_started_at,j.completed_at))}</b></div><div><span>Total turnaround</span><b>${j.closed_at?dur(gap(j.requested_at,j.closed_at)):'Open'}</b></div><div><span>Requested on</span><b>${fd(j.requested_at)}</b></div></div>
   <div><div style="display:flex;justify-content:space-between;margin-bottom:6px"><b>Progress</b><span style="color:var(--mut)">${T.length?'Average of '+T.length+' task'+(T.length===1?'':'s'):'Starts when tasks are added'}</span></div>${pbar(j.progress)}</div>
   ${acts?`<div class="dacts">${acts}</div>`:''}
   ${(active||T.length)?`<div class="sec" style="margin:0"><header><h2>Tasks</h2><span class="sp"></span>${mg&&active?`<button class="btn sm" data-a="addtask" data-id="${j.jo_id}">${ic('plus',14)}Add task</button>`:''}</header>${T.length?`<ul class="tlist">${TO.map((t,ix)=>{const cx=t.status==='Cancelled',tf=D?D.files.filter(f=>f.task_id===t.task_id):[],can=active&&!cx&&(mg||t.assigned_to===me.email),live=TO.filter(x=>x.status!=='Cancelled'),lp=live.indexOf(t),mv=active&&mg&&!cx&&live.length>1;
@@ -1146,7 +1193,7 @@ function gtSection(j){
 }
 /* Does a job order (or one of its tasks) match the search text? */
 const gtMatch=i=>{const q=gt.q.trim().toLowerCase();if(!q)return true;const j=i.j,has=x=>String(x||'').toLowerCase().indexOf(q)>=0;
-  return has(j.title)||has(j.jo_number)||has(nm(j.requested_by))||has(nm(j.assigned_developer))||i.tasks.some(k=>has(k.t.task_name)||has(nm(k.t.assigned_to)))};
+  return has(j.title)||has(j.jo_number)||has(j.business_unit)||has(j.department)||has(j.sales_office)||has(nm(j.requested_by))||has(nm(j.assigned_developer))||i.tasks.some(k=>has(k.t.task_name)||has(nm(k.t.assigned_to)))};
 const gtInRange=i=>{const w=gtWin();if(w.a==null&&w.b==null)return true;const e=Math.max(i.end,i.target??i.end);return (w.b==null||i.start<=w.b)&&(w.a==null||e>=w.a)};
 const gtStatus=i=>!gt.st||(gt.st==='Overdue'?(!i.done&&i.sc.k==='over'):i.j.status===gt.st);
 const GT_ST=['Pending','In Progress','Completed','Closed','Overdue'];
@@ -1298,11 +1345,14 @@ const H={
   tdgo:el=>{$('#dlg').close();ui.td=null;H[el.dataset.go](el)},
   tdjo:el=>{$('#dlg').close();ui.td=null;ui.jo=el.dataset.id;drawer()},
   restask:el=>{const t=S.tasks.find(x=>x.task_id===el.dataset.id);if(t)resTask(t)},
+  editinfo:el=>{const j=jobOf(el.dataset.id);if(!j)return;dialog({title:'Request details',desc:`${j.jo_number}: ${j.title}`,label:'Save details',busy:'Saving…',
+    fields:[{k:'business_unit',l:'Business unit',req:1,max:80,v:j.business_unit},{k:'department',l:'Department',req:1,max:80,v:j.department},{k:'sales_office',l:'Sales office',max:80,v:j.sales_office,hint:'Optional.'}],
+    onSubmit:v=>act('updateJOInfo',{jo_id:j.jo_id,business_unit:v.business_unit,department:v.department,sales_office:v.sales_office},'Details saved',1)})},
   resjo:el=>{const j=jobOf(el.dataset.id);if(j)resJo(j)},
   canceltask:el=>{const t=S.tasks.find(x=>x.task_id===el.dataset.id);dialog({title:'Cancel task',desc:t.task_name,label:'Cancel task',danger:1,busy:'Cancelling…',cancel:'Keep task',fields:[{k:'reason',l:'Reason',t:'area',rows:3,max:500,req:1,hint:'Why is this task being cancelled? It stays on the request, marked Cancelled, and no longer counts toward progress.'}],onSubmit:v=>act('cancelTask',{task_id:t.task_id,reason:v.reason},'Task cancelled',1)})},
   reinstate:el=>{const t=S.tasks.find(x=>x.task_id===el.dataset.id);dialog({title:'Reinstate task',desc:t.task_name,label:'Reinstate task',busy:'Reinstating…',html:'<p class="dd">The task goes back into the job order and counts toward progress again.</p>',fields:[],onSubmit:()=>act('reinstateTask',{task_id:t.task_id},'Task reinstated',1)})},
   updtask:el=>updTask(S.tasks.find(t=>t.task_id===el.dataset.id)),
-  adduser:()=>userForm(),edituser:el=>userForm(S.users.find(u=>u.email===el.dataset.id)),
+  adduser:()=>userForm(),importusers:()=>importUsersDialog(),edituser:el=>userForm(S.users.find(u=>u.email===el.dataset.id)),
   addteam:()=>teamForm(),editteam:el=>teamForm(S.teams.find(t=>t.team_id===el.dataset.id))
 };
 document.addEventListener('click',e=>{const el=e.target.closest('[data-a]');if(el&&el.tagName==='A'&&el.getAttribute('href')==='#')e.preventDefault();if(el&&S&&H[el.dataset.a])H[el.dataset.a](el)});
