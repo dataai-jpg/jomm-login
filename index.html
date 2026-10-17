@@ -266,6 +266,7 @@ dialog::backdrop{background:rgba(8,16,27,.55)}
 .pc{display:flex;align-items:center;gap:12px}.pc output{font-weight:700;min-width:44px;text-align:right}
 .qk{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}.qk button{border:1px solid var(--line2);background:var(--surface);border-radius:8px;padding:3px 10px;cursor:pointer;font-weight:600}
 .dfoot{display:flex;justify-content:flex-end;gap:10px;padding:18px 22px 20px}
+#upd{position:fixed;left:50%;transform:translateX(-50%);bottom:20px;z-index:210;display:flex;align-items:center;gap:10px;flex-wrap:wrap;max-width:min(520px,calc(100vw - 24px));background:var(--ink);color:var(--bg);border-radius:12px;padding:10px 14px;box-shadow:0 10px 30px rgba(0,0,0,.35)}#upd span{flex:1 1 180px}#upd .ghost{color:inherit;border-color:rgba(255,255,255,.35)}
 #toasts{position:fixed;right:20px;bottom:20px;display:grid;gap:8px;z-index:200;max-width:min(380px,calc(100vw - 32px))}
 .toast{display:flex;align-items:flex-start;gap:10px;background:var(--ink);color:var(--bg);border-radius:11px;padding:11px 14px;box-shadow:0 10px 30px rgba(0,0,0,.3)}
 .toast.err{background:var(--bad);color:#fff}.toast .ic{margin-top:2px}
@@ -282,6 +283,7 @@ dialog::backdrop{background:rgba(8,16,27,.55)}
   #tabs .nv span:not(.n){white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
   #tabs .nv.on::before{display:none}#tabs .nv .n{position:absolute;top:2px;right:18%;margin:0}
   #toasts{right:12px;left:12px;bottom:84px;max-width:none}
+  #upd{bottom:84px}
   #newbtn span{display:none}#newbtn{padding:9px 11px}
   .facts{grid-template-columns:repeat(2,1fr)}.facts div:nth-child(4n){border-right:1px solid var(--line)}.facts div:nth-child(2n){border-right:0}.facts div:nth-last-child(-n+4){border-bottom:1px solid var(--line)}.facts div:nth-last-child(-n+2){border-bottom:0}
   #login{grid-template-columns:1fr}.hero{padding:28px}.hero h1{font-size:25px}.hero ul{display:none}
@@ -1489,5 +1491,42 @@ if(isStandalone()){try{localStorage.setItem('jomm_installed','1')}catch(e){}}
 /* Say so when the connection drops instead of failing silently. */
 addEventListener('offline',()=>toast('You are offline. JOMM needs a connection to load and save data.','err'));
 addEventListener('online',()=>toast('Back online'));
-if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+/* ---- keep an installed copy current ----
+   BUILD is stamped on every release. The app compares it with the live index.html when it is opened, brought back to the
+   front, or comes back online, and offers "Update now" when they differ. Nothing is reloaded behind the user's back. */
+const BUILD='20261017-1237';
+let updShown=false,updLast=0;
+function showUpdate(){
+  if(updShown)return;updShown=true;
+  const d=document.createElement('div');d.id='upd';d.setAttribute('role','status');
+  d.innerHTML='<span>A new version of JOMM is available.</span><button class="btn sm" id="updgo" type="button">Update now</button><button class="btn sm ghost" id="updx" type="button">Later</button>';
+  document.body.appendChild(d);
+  $('#updgo').onclick=applyUpdate;$('#updx').onclick=()=>{d.remove();updShown=false};
+}
+async function applyUpdate(){
+  try{const reg=await navigator.serviceWorker.getRegistration();if(reg)await reg.update();if(window.caches){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)))}}catch(e){}
+  location.reload();
+}
+async function checkVersion(force){
+  if(BUILD==='dev'||updShown||location.protocol.indexOf('http')!==0||navigator.onLine===false)return;
+  if(!force&&Date.now()-updLast<120000)return;
+  updLast=Date.now();
+  try{
+    const r=await fetch('index.html?v='+Date.now(),{cache:'no-store'});if(!r.ok)return;
+    const m=(await r.text()).match(/BUILD\s*=\s*'(\d[^']*)'/);
+    if(m&&m[1]!==BUILD)showUpdate();
+  }catch(e){}
+}
+if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0)addEventListener('load',()=>{
+  navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{
+    const poke=()=>{try{reg.update()}catch(e){}};
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden)poke()});
+    setInterval(poke,30*60*1000);
+  }).catch(()=>{});
+  checkVersion(true);
+});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkVersion()});
+addEventListener('focus',()=>checkVersion());
+addEventListener('online',()=>checkVersion(true));
+setInterval(()=>checkVersion(),10*60*1000);
 </script></body></html>
