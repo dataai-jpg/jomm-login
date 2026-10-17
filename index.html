@@ -141,8 +141,8 @@ main{padding:24px 28px 40px;max-width:none;width:100%}
 
 /* ---- job orders ---- */
 .tool{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
-.search{position:relative;flex:1;min-width:220px}.search .ic{position:absolute;left:12px;top:11px;color:var(--mut)}.search input{padding-left:38px}
-.tool select{width:auto}
+.search{position:relative;flex:1;min-width:min(220px,100%)}.search .ic{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--mut)}.search input{padding-left:38px}
+.tool select{width:auto;max-width:100%;min-width:0}
 .tog{display:flex;background:var(--surface);border:1px solid var(--line2);border-radius:10px;padding:3px}
 .tog button{display:flex;align-items:center;gap:6px;border:0;background:none;padding:6px 12px;border-radius:7px;cursor:pointer;color:var(--mut);font-weight:600}
 .tog button.on{background:var(--brand-soft);color:var(--brand)}
@@ -204,7 +204,7 @@ body.dopen #scrim{opacity:1;pointer-events:auto}body.dopen #drawer{transform:non
 .btn.ico{padding:5px 8px}.hint{display:inline-flex;align-items:center;gap:3px;color:var(--mut)}.lk{margin-left:auto;border:0;background:none;color:var(--brand);font:inherit;font-size:12px;font-weight:600;cursor:pointer;padding:0 0 0 8px}.lk:hover{text-decoration:underline}
 .orig{display:block;color:var(--mut);font-size:11.5px;margin-top:2px}
 #dx[hidden]{display:none}
-dialog.wide{width:min(640px,calc(100vw - 24px))}
+dialog.wide{width:min(680px,calc(100vw - 32px))}
 .tdv{display:grid;gap:10px;padding:2px 22px 0}.tdv-a{padding:0 22px}.tdv h3{margin:6px 0 0;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);font-weight:700}
 .tdv-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.tdv-jo{color:var(--brand);font-weight:600;font-size:13px;text-decoration:none;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}.tdv-jo:hover{text-decoration:underline}
 .tdv-g{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;margin:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--line)}
@@ -254,13 +254,14 @@ dialog.wide{width:min(640px,calc(100vw - 24px))}
 .tl small{color:var(--mut);display:block}
 
 /* ---- dialog / toast ---- */
-dialog{border:0;border-radius:16px;padding:0;width:min(480px,94vw);max-height:92vh;background:var(--surface);color:var(--ink);box-shadow:0 24px 70px rgba(0,0,0,.35)}
+dialog{border:0;border-radius:16px;padding:0;width:min(480px,calc(100vw - 32px));max-height:92vh;max-height:92dvh;background:var(--surface);color:var(--ink);box-shadow:0 24px 70px rgba(0,0,0,.35)}
 dialog::backdrop{background:rgba(8,16,27,.55)}
-#df{display:flex;flex-direction:column;max-height:92vh}
+#df{display:flex;flex-direction:column;max-height:92vh;max-height:92dvh}
 .dh{display:flex;align-items:center;justify-content:space-between;padding:20px 22px 4px}.dh h2{font-size:18px;letter-spacing:-.01em}
 .dd{padding:0 22px;color:var(--mut)}
 .derr{margin:12px 22px 0;padding:9px 12px;border-radius:9px;background:color-mix(in srgb,var(--bad) 12%,transparent);color:var(--bad);font-weight:500}
-.dfs{padding:6px 22px 4px;overflow-y:auto}
+.dfs{padding:6px 22px 4px;overflow-y:auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:16px;grid-auto-flow:row dense;align-content:start}
+.dfs>*{grid-column:1/-1;min-width:0}.dfs>.fld.half{grid-column:auto}.fld[hidden]{display:none}
 .fld{margin-top:14px}.fld label{display:block;font-weight:600;margin-bottom:5px}.fld label i{color:var(--bad);font-style:normal}.fld small,.chk+small{display:block;color:var(--mut);margin-top:4px;font-size:12.5px}
 .chk{display:flex;align-items:center;gap:9px;margin-top:12px;cursor:pointer}
 .pc{display:flex;align-items:center;gap:12px}.pc output{font-weight:700;min-width:44px;text-align:right}
@@ -305,7 +306,9 @@ dialog::backdrop{background:rgba(8,16,27,.55)}
   .tk{flex-wrap:wrap}.tk .pw{width:100%;order:3}
   .dr-b{padding:16px 16px 40px}.dr-h{padding:12px 16px}
   dialog{width:100vw;max-width:100vw;margin:auto 0 0;border-radius:18px 18px 0 0}
-  .dfoot{position:sticky;bottom:0;background:var(--surface);border-top:1px solid var(--line)}.dfoot .btn{flex:1}
+  .dfoot{position:sticky;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding-bottom:calc(14px + env(safe-area-inset-bottom,0px))}.dfoot .btn{flex:1;min-height:44px}
+  input,select,textarea{font-size:16px;min-height:44px}.chk{min-height:44px}
+  .dh{padding:16px 16px 4px}.dd,.dfs{padding-left:16px;padding-right:16px}.derr{margin-left:16px;margin-right:16px}
   .stages div{font-size:11px}
 }
 
@@ -389,6 +392,11 @@ dialog textarea{max-height:40vh}
 .gl small.dv{color:var(--ink)}.gl small.dv b{font-weight:600;font:inherit;font-weight:600;cursor:inherit}.gthint{margin:0 0 8px;font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap:8px;flex-wrap:wrap}.gthint .sp{flex:1}.gx2{align-self:flex-start;margin-top:4px;border:1px solid var(--line2);background:var(--surface);color:var(--brand);border-radius:999px;padding:3px 10px 3px 8px;font:inherit;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px}.gx2 i{font-style:normal;display:inline-block;transition:transform .15s}.gx2[aria-expanded=true] i{transform:rotate(90deg)}.gtone{margin-bottom:16px}.gtf select{width:auto;flex:none;border:1px solid var(--line2);border-radius:10px;padding:8px 10px;font:inherit;font-size:13px;background:var(--surface);color:var(--ink);min-height:36px}
 .gl mark{background:color-mix(in srgb,var(--sub) 35%,transparent);color:inherit;border-radius:3px;padding:0 1px}
 .gtk{overflow:hidden}
+@media(min-width:761px) and (max-width:1100px){dialog.wide{width:min(620px,calc(100vw - 48px))}}
+@media(max-width:560px){.dfs{grid-template-columns:minmax(0,1fr)}.dfs>.fld.half{grid-column:1/-1}}
+@media(max-height:480px) and (orientation:landscape){dialog{max-height:100dvh;max-width:min(680px,100vw);margin:auto;border-radius:12px}#df{max-height:100dvh}}
+@media(pointer:coarse){input,select,textarea{font-size:16px;min-height:44px}.dfoot .btn{min-height:44px}.chk{min-height:44px}}
+@media(max-width:560px){.tool{gap:8px}.search{flex:1 1 100%}.tool>select{flex:1 1 calc(50% - 4px)}}
 </style></head>
 <body>
 <div id="topbar" aria-hidden="true"></div>
@@ -577,11 +585,12 @@ function field(f){
   const id='f_'+f.k,lab=`<label for="${id}">${esc(f.l)}${f.req?' <i aria-hidden="true">*</i>':''}</label>`,hint=f.hint?`<small>${esc(f.hint)}</small>`:'';
   if(f.t==='check')return `<label class="chk"><input type="checkbox" id="${id}"${f.v?' checked':''}><span>${esc(f.l)}</span></label>${hint}`;
   if(f.t==='pct'){const v=f.v||0;return `<div class="fld">${lab}<div class="pcn"><input type="number" id="${id}" min="0" max="100" step="1" inputmode="numeric" value="${v}"><b>%</b><input type="range" id="f_prange" min="0" max="100" step="1" value="${v}" aria-label="Progress slider"></div><div class="qk">${[0,25,50,75,100].map(n=>`<button type="button" data-q="${n}">${n===100?'Done':n+'%'}</button>`).join('')}</div><div style="margin-top:8px" id="pst">${chip(pstat(v))}</div>${hint}</div>`}
+  const cls='fld'+(f.half||((f.t==='select'||f.t==='date')&&!f.full)?' half':'');
   let c;
   if(f.t==='select')c=`<select id="${id}">${optsHtml(f.o,f.v,f.ph)}</select>`;
   else if(f.t==='area')c=`<textarea id="${id}" rows="${f.rows||3}" maxlength="${f.max||1000}">${esc(f.v)}</textarea>`;
   else c=`<input id="${id}" type="${f.t||'text'}" value="${esc(f.v)}"${f.ro?' readonly':''}${f.max?` maxlength="${f.max}"`:''}${f.min?` min="${f.min}"`:''}>`;
-  return `<div class="fld">${lab}${c}${hint}</div>`;
+  return `<div class="${cls}">${lab}${c}${hint}</div>`;
 }
 let dlgWord='Working…';
 function setDlgBusy(b){
@@ -592,7 +601,7 @@ function showErr(m){const e=$('#derr');if(e){e.textContent=m;e.hidden=false}}
 /* o: {title, desc, fields, label, danger, onSubmit(values) -> null | error message, after(dialog)} */
 function dialog(o){
   const d=$('#dlg'),fs=o.fields||[];dlgWord=o.busy||'Working…';
-  d.classList.toggle('wide',!!o.wide);d.innerHTML=`<form id="df" novalidate><div class="dh"><h2>${esc(o.title)}</h2><button type="button" class="ib" id="dxx" aria-label="Close">${ic('x')}</button></div>${o.desc?`<p class="dd">${esc(o.desc)}</p>`:''}${o.html||''}<div class="derr" id="derr" role="alert" hidden></div><div class="dfs">${fs.map(field).join('')}${o.html2||''}</div><div class="dfoot"><button type="button" class="btn ghost" id="dx"${o.single?' hidden':''}>${esc(o.cancel||'Cancel')}</button><button class="btn${o.danger?' danger':''}" id="dok" data-l="${esc(o.label||'Save')}"><span class="spin" aria-hidden="true"></span><span class="bl">${esc(o.label||'Save')}</span></button></div></form>`;
+  d.classList.toggle('wide',!!o.wide||fs.filter(f=>f.t!=='check').length>=4);d.innerHTML=`<form id="df" novalidate><div class="dh"><h2>${esc(o.title)}</h2><button type="button" class="ib" id="dxx" aria-label="Close">${ic('x')}</button></div>${o.desc?`<p class="dd">${esc(o.desc)}</p>`:''}${o.html||''}<div class="derr" id="derr" role="alert" hidden></div><div class="dfs">${fs.map(field).join('')}${o.html2||''}</div><div class="dfoot"><button type="button" class="btn ghost" id="dx"${o.single?' hidden':''}>${esc(o.cancel||'Cancel')}</button><button class="btn${o.danger?' danger':''}" id="dok" data-l="${esc(o.label||'Save')}"><span class="spin" aria-hidden="true"></span><span class="bl">${esc(o.label||'Save')}</span></button></div></form>`;
   const close=()=>{if(!dlgBusy)d.close()};
   $('#dx').onclick=close;$('#dxx').onclick=close;d.oncancel=e=>{if(dlgBusy)e.preventDefault()};
   $('#df').onsubmit=async e=>{
@@ -724,7 +733,7 @@ function newJo(){
   let dr=draftGet();if(!dr||dr.owner!==S.me.email)dr={sid:uid(),owner:S.me.email,v:{},state:'idle'};
   const restored=Object.keys(dr.v||{}).length>0,v0=dr.v||{},P=picker('Reference files (optional)');let created=null;
   dialog({title:'New request',desc:restored?'We kept the details of your last attempt. Submitting again will not create a duplicate.':'Describe the work you need. A manager reviews it and assigns a developer.',label:'Submit request',busy:'Submitting…',
-    fields:[{k:'title',l:'Title',req:1,max:140,v:v0.title},{k:'service_category',l:'Service category',t:'select',o:S.lists.service_categories,v:v0.service_category,ph:'Choose a category',req:1},{k:'request_type',l:'Request type',t:'select',o:S.lists.request_types,v:v0.request_type,ph:'Choose a request type',req:1},{k:'service_type',l:'Service type',ro:1,v:v0.service_category&&v0.request_type?v0.service_category+' '+v0.request_type:'',hint:'Generated from the category and request type.'},{k:'business_unit',l:'Business unit',req:1,max:80,v:v0.business_unit??S.me.business_unit},{k:'department',l:'Department',req:1,max:80,v:v0.department??S.me.department},{k:'sales_office',l:'Sales office',max:80,v:v0.sales_office??S.me.sales_office,hint:S.me.business_unit||S.me.department?'Filled in from your profile. You can change it for this request.':'Optional.'},{k:'description',l:'Details',t:'area',rows:4,max:4000,hint:'What do you need, and why?',v:v0.description},{k:'priority',l:'Priority',t:'select',o:S.lists.priorities,v:v0.priority||'Medium'},{k:'target_date',l:'Target date',t:'date',min:todayStr(),v:v0.target_date}],
+    fields:[{k:'title',l:'Title',req:1,max:140,v:v0.title},{k:'service_category',l:'Service category',t:'select',o:S.lists.service_categories,v:v0.service_category,ph:'Choose a category',req:1},{k:'request_type',l:'Request type',t:'select',o:S.lists.request_types,v:v0.request_type,ph:'Choose a request type',req:1},{k:'service_type',l:'Service type',ro:1,full:1,v:v0.service_category&&v0.request_type?v0.service_category+' '+v0.request_type:'',hint:'Generated from the category and request type.'},{k:'business_unit',l:'Business unit',req:1,half:1,max:80,v:v0.business_unit??S.me.business_unit},{k:'department',l:'Department',req:1,half:1,max:80,v:v0.department??S.me.department},{k:'sales_office',l:'Sales office',max:80,v:v0.sales_office??S.me.sales_office,hint:S.me.business_unit||S.me.department?'Filled in from your profile. You can change it for this request.':'Optional.'},{k:'description',l:'Details',t:'area',rows:4,max:4000,hint:'What do you need, and why?',v:v0.description},{k:'priority',l:'Priority',t:'select',o:S.lists.priorities,v:v0.priority||'Medium'},{k:'target_date',l:'Target date',t:'date',min:todayStr(),v:v0.target_date}],
     html:'<div class="subst" id="subst" role="status"></div>',html2:P.html(),
     validate:()=>P.invalid()?'Remove the files marked with an error, then submit again.':'',
     onOpen:()=>{const c=$('#f_service_category'),r=$('#f_request_type'),s=$('#f_service_type');if(!c||!r||!s)return;const up=()=>{s.value=c.value&&r.value?c.value+' '+r.value:''};c.addEventListener('change',up);r.addEventListener('change',up);up()},
@@ -772,7 +781,7 @@ function addTask(j){
   const team=j.developer_team||S.me.team_id,hasMine=devList().some(u=>u.team_id===team&&team);
   const upd=d=>{const sel=$('#f_assigned_to'),cur=sel.value,o=$('#f_others')?$('#f_others').checked:true;sel.innerHTML=optsHtml(devGroups(team,o),cur,'Choose a developer')};
   dialog({title:'Add task',desc:`${j.jo_number}: ${j.title}`,label:'Add task',
-    fields:[{k:'task_name',l:'Task',req:1,max:140},{k:'task_type',l:'Type',t:'select',o:S.lists.task_types},{k:'task_type_other',l:'Please specify',max:80,hint:'Describe the kind of task.'},
+    fields:[{k:'task_name',l:'Task',req:1,max:140},{k:'task_type',l:'Type',t:'select',o:S.lists.task_types},{k:'task_type_other',l:'Please specify',half:1,max:80,hint:'Describe the kind of task.'},
       {k:'assigned_to',l:'Assign to',t:'select',o:devGroups(team,0),ph:'Choose a developer',req:1,hint:hasMine?'Your team is listed first.':'No developers in this team yet, so everyone is listed.'},
       ...(hasMine?[{k:'others',l:'Also show developers from other teams',t:'check'}]:[]),
       {k:'due_date',l:'Due date',t:'date',min:todayStr()},{k:'priority',l:'Priority',t:'select',o:S.lists.priorities,v:j.priority},{k:'description',l:'Task description',t:'area',rows:4,max:20000,hint:'Optional. Requirements, activities, findings, issues and expected deliverables. Line breaks are kept.'}],
@@ -878,10 +887,10 @@ function importUsersDialog(){
 function userForm(u){
   u=u||{};const edit=!!u.email;
   dialog({title:edit?'Edit user':'Add user',desc:edit?'':'They can sign in with this Google account email.',label:edit?'Save changes':'Add user',
-    fields:[{k:'email',l:'Google account email',t:'email',v:u.email,ro:edit,req:1,max:120},{k:'name',l:'Full name',v:u.name,max:80},
+    fields:[{k:'email',l:'Google account email',t:'email',half:1,v:u.email,ro:edit,req:1,max:120},{k:'name',l:'Full name',half:1,v:u.name,max:80},
       {k:'role',l:'Role',t:'select',o:S.roles,v:u.role||'Requestor'},{k:'account_status',l:'Account status',t:'select',o:S.statuses,v:u.account_status||'Active',hint:'Inactive and Locked accounts are blocked on their next action.'},
       {k:'team_id',l:'Team',t:'select',o:S.teams.map(t=>[t.team_id,t.team_name]),ph:'No team',v:u.team_id},
-      {k:'business_unit',l:'Business unit',max:80,v:u.business_unit,hint:'Pre-fills this person\'s request forms.'},{k:'department',l:'Department',max:80,v:u.department},{k:'sales_office',l:'Sales office',max:80,v:u.sales_office}],
+      {k:'business_unit',l:'Business unit',half:1,max:80,v:u.business_unit},{k:'department',l:'Department',half:1,max:80,v:u.department},{k:'sales_office',l:'Sales office',half:1,max:80,v:u.sales_office,hint:'Business unit, department and sales office pre-fill this person\'s request forms.'}],
     onSubmit:v=>act('saveUser',v,edit?'User updated':'User added',1)});
 }
 function teamForm(t){
@@ -1494,7 +1503,7 @@ addEventListener('online',()=>toast('Back online'));
 /* ---- keep an installed copy current ----
    BUILD is stamped on every release. The app compares it with the live index.html when it is opened, brought back to the
    front, or comes back online, and offers "Update now" when they differ. Nothing is reloaded behind the user's back. */
-const BUILD='20261017-1237';
+const BUILD='20261018-0027';
 let updShown=false,updLast=0;
 function showUpdate(){
   if(updShown)return;updShown=true;
