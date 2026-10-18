@@ -397,6 +397,7 @@ dialog textarea{max-height:40vh}
 @media(max-height:480px) and (orientation:landscape){dialog{max-height:100dvh;max-width:min(680px,100vw);margin:auto;border-radius:12px}#df{max-height:100dvh}}
 @media(pointer:coarse){input,select,textarea{font-size:16px;min-height:44px}.dfoot .btn{min-height:44px}.chk{min-height:44px}}
 @media(max-width:560px){.tool{gap:8px}.search{flex:1 1 100%}.tool>select{flex:1 1 calc(50% - 4px)}}
+.dfs{min-height:0;flex:1 1 auto;overscroll-behavior:contain}.dfs .tdv{padding:2px 0 0}.dfs .tdv-a{position:sticky;bottom:0;z-index:2;margin:6px 0 0;padding:10px 0 8px;background:var(--surface);border-top:1px solid var(--line)}.dfs .tdv-a .btn{min-height:40px}
 </style></head>
 <body>
 <div id="topbar" aria-hidden="true"></div>
@@ -601,7 +602,7 @@ function showErr(m){const e=$('#derr');if(e){e.textContent=m;e.hidden=false}}
 /* o: {title, desc, fields, label, danger, onSubmit(values) -> null | error message, after(dialog)} */
 function dialog(o){
   const d=$('#dlg'),fs=o.fields||[];dlgWord=o.busy||'Working…';
-  d.classList.toggle('wide',!!o.wide||fs.filter(f=>f.t!=='check').length>=4);d.innerHTML=`<form id="df" novalidate><div class="dh"><h2>${esc(o.title)}</h2><button type="button" class="ib" id="dxx" aria-label="Close">${ic('x')}</button></div>${o.desc?`<p class="dd">${esc(o.desc)}</p>`:''}${o.html||''}<div class="derr" id="derr" role="alert" hidden></div><div class="dfs">${fs.map(field).join('')}${o.html2||''}</div><div class="dfoot"><button type="button" class="btn ghost" id="dx"${o.single?' hidden':''}>${esc(o.cancel||'Cancel')}</button><button class="btn${o.danger?' danger':''}" id="dok" data-l="${esc(o.label||'Save')}"><span class="spin" aria-hidden="true"></span><span class="bl">${esc(o.label||'Save')}</span></button></div></form>`;
+  d.classList.toggle('wide',!!o.wide||fs.filter(f=>f.t!=='check').length>=4);d.innerHTML=`<form id="df" novalidate><div class="dh"><h2>${esc(o.title)}</h2><button type="button" class="ib" id="dxx" aria-label="Close">${ic('x')}</button></div>${o.desc?`<p class="dd">${esc(o.desc)}</p>`:''}<div class="derr" id="derr" role="alert" hidden></div><div class="dfs">${o.html||''}${fs.map(field).join('')}${o.html2||''}</div><div class="dfoot"><button type="button" class="btn ghost" id="dx"${o.single?' hidden':''}>${esc(o.cancel||'Cancel')}</button><button class="btn${o.danger?' danger':''}" id="dok" data-l="${esc(o.label||'Save')}"><span class="spin" aria-hidden="true"></span><span class="bl">${esc(o.label||'Save')}</span></button></div></form>`;
   const close=()=>{if(!dlgBusy)d.close()};
   $('#dx').onclick=close;$('#dxx').onclick=close;d.oncancel=e=>{if(dlgBusy)e.preventDefault()};
   $('#df').onsubmit=async e=>{
@@ -1503,7 +1504,7 @@ addEventListener('online',()=>toast('Back online'));
 /* ---- keep an installed copy current ----
    BUILD is stamped on every release. The app compares it with the live index.html when it is opened, brought back to the
    front, or comes back online, and offers "Update now" when they differ. Nothing is reloaded behind the user's back. */
-const BUILD='20261018-0027';
+const BUILD='20261018-2126';
 let updShown=false,updLast=0;
 function showUpdate(){
   if(updShown)return;updShown=true;
